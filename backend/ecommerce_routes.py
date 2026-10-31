@@ -1156,51 +1156,127 @@ async def list_ecommerce_customers():
 class AIQueryRequest(BaseModel):
     query: str
     phone_number: Optional[str] = None
+    customer_name: Optional[str] = "Sharma Metal Works"
 
 @router.post("/ai/query")
 async def ecommerce_ai_shopping_assistant(req: AIQueryRequest):
     """
-    Extends Vapi AI assistant to handle vernacular shopping queries:
-    - Product searches
-    - Price checks
-    - Stock availability checks
-    - Order status inquiries
+    Autonomous Procurement & AI Shopping Assistant for Sharma Enterprises.
+    Binds deeply with:
+    - Technical Specifications & compliance data in MongoDB Atlas
+    - Live Inventory & low stock levels
+    - Automated GST (18%) and bulk procurement volume quotations
+    - Active promotional coupons (MSME10, SHARMA500, BULK15)
+    - Real-time Order Tracking and logistics dispatch states
+    - Outbound vernacular voice call triggers via Vapi / VoiceDispatcher
     """
     seed_ecommerce_if_empty()
     db = get_mongo_db()
     prod_col = db["ecommerce_products"]
     ord_col = db["ecommerce_orders"]
+    coup_col = db["ecommerce_coupons"]
 
     query_text = req.query.lower().strip()
 
-    # 1. Order Status Check
+    # ----------------------------------------------------
+    # INTENT 1: OUTBOUND VOICE CALL / PHONE DISPATCH REQUEST
+    # ----------------------------------------------------
+    voice_keywords = ["call me", "phone", "voice", "call", "baat karo", "phone lagao", "sampark", "callback"]
+    if any(k in query_text for k in voice_keywords) and ("me" in query_text or "karo" in query_text or "lagao" in query_text or "dispatch" in query_text or "callback" in query_text):
+        target_phone = req.phone_number or "+91 98765 43210"
+        cust_name = req.customer_name or "Industrial Buyer"
+        return {
+            "intent": "VOICE_DISPATCH_TRIGGER",
+            "speech_response": (
+                f"Namaste {cust_name}! Sharma Enterprises ke automated Vernacular Voice Dispatcher ko request bhej di gayi hai. "
+                f"Humare AI procurement assistant aapko {target_phone} par Turant connect karenge!"
+            ),
+            "data": {
+                "phone_number": target_phone,
+                "customer_name": cust_name,
+                "status": "QUEUED"
+            },
+            "action": {
+                "type": "TRIGGER_CALL",
+                "phone_number": target_phone,
+                "customer_name": cust_name,
+                "label": f"Call {target_phone} via AI Voice"
+            }
+        }
+
+    # ----------------------------------------------------
+    # INTENT 2: COUPONS & DISCOUNT ENGINE INQUIRY
+    # ----------------------------------------------------
+    coupon_keywords = ["coupon", "discount", "code", "offer", "promo", "bachat", "chhoot", "rebate"]
+    if any(k in query_text for k in coupon_keywords) and not ("status" in query_text or "order" in query_text):
+        active_coupons = list(coup_col.find({"is_active": True}))
+        coupon_summaries = []
+        for cp in active_coupons:
+            if cp["discount_type"] == "PERCENTAGE":
+                coupon_summaries.append(f"• {cp['code']}: {cp['discount_value']}% OFF on orders > ₹{cp.get('min_order_amount', 0):,.0f} (Max ₹{cp.get('max_discount', 0):,.0f})")
+            else:
+                coupon_summaries.append(f"• {cp['code']}: Flat ₹{cp['discount_value']} OFF on orders > ₹{cp.get('min_order_amount', 0):,.0f}")
+
+        speech_text = (
+            "Haan ji! Hamare paas verified Indian MSME buyers ke liye special discount coupons available hain: " +
+            ", ".join([f"{c['code']} ({c['discount_value']}%/flat)" for c in active_coupons[:3]]) + ". "
+            "Aap checkout par coupon code apply karke instant bachat kar sakte hain!"
+        )
+        return {
+            "intent": "COUPON_INQUIRY",
+            "speech_response": speech_text,
+            "data": serialize_mongo_doc(active_coupons),
+            "action": {
+                "type": "APPLY_COUPON",
+                "code": active_coupons[0]["code"] if active_coupons else "MSME10",
+                "label": f"Apply {active_coupons[0]['code'] if active_coupons else 'MSME10'} (-10%)"
+            }
+        }
+
+    # ----------------------------------------------------
+    # INTENT 3: ORDER STATUS & LOGISTICS TRACKING
+    # ----------------------------------------------------
     order_match = re.search(r'(ord-\d+-\d+|\bord-\d+\b)', query_text)
-    if order_match or "order" in query_text or "status" in query_text:
+    if order_match or "order" in query_text or "status" in query_text or "tracking" in query_text or "track" in query_text or "delivery" in query_text:
         target_ord = None
         if order_match:
             target_ord = ord_col.find_one({"order_id": {"$regex": order_match.group(1), "$options": "i"}})
         elif req.phone_number:
             target_ord = ord_col.find_one({"customer_phone": req.phone_number}, sort=[("created_at", -1)])
+        else:
+            target_ord = ord_col.find_one(sort=[("created_at", -1)])
 
         if target_ord:
+            items_summary = ", ".join([f"{it.get('quantity', 1)}x {it.get('product_name', 'Item')}" for it in target_ord.get("items", [])[:2]])
+            city = target_ord.get("delivery_address", {}).get("city", "Mumbai")
             return {
                 "intent": "ORDER_STATUS",
                 "speech_response": (
                     f"Aapka order {target_ord['order_id']} ka current status '{target_ord['order_status']}' hai. "
-                    f"Total amount ₹{target_ord['total_amount']:,.2f} hai. Delivery address: {target_ord['delivery_address'].get('city', 'Mumbai')}."
+                    f"Items: {items_summary}. Total payable amount ₹{target_ord['total_amount']:,.2f} ({target_ord.get('payment_status', 'PAID')}). "
+                    f"Destination: {city}. "
+                    f"{'Delivery Bay clearance confirmed.' if target_ord['order_status'] == 'SHIPPED' else 'Order is under active fulfillment.'}"
                 ),
-                "data": serialize_mongo_doc(target_ord)
+                "data": serialize_mongo_doc(target_ord),
+                "action": {
+                    "type": "VIEW_ORDER",
+                    "order_id": target_ord["order_id"],
+                    "label": f"View Details of {target_ord['order_id']}"
+                }
             }
 
-    # 2. Stock / Price / Product Search (Vernacular NLP Keyword Matching)
+    # ----------------------------------------------------
+    # SEARCH PRODUCTS IN MONGODB (KEYWORD EXTRACTION)
+    # ----------------------------------------------------
     stop_words = {
         "kya", "price", "rate", "stock", "available", "bhai", "chahiye", "hai", "hain", 
         "milega", "aur", "kitna", "kitne", "what", "is", "the", "of", "check", "do", "you", 
-        "have", "in", "for", "item", "product", "goods", "supply", "order", "status", "ka", "ki", "ke"
+        "have", "in", "for", "item", "product", "goods", "supply", "order", "status", "ka", "ki", "ke",
+        "tell", "me", "about", "specs", "specification", "detail", "details", "calculate", "cost"
     }
     words = [w for w in re.findall(r'[a-zA-Z0-9]+', query_text) if len(w) > 2 and w not in stop_words]
-    
-    products = []
+
+    matched_products = []
     if words:
         word_regexes = []
         for w in words:
@@ -1211,34 +1287,99 @@ async def ecommerce_ai_shopping_assistant(req: AIQueryRequest):
                 {"description": {"$regex": esc, "$options": "i"}},
                 {"sku": {"$regex": esc, "$options": "i"}}
             ])
-        products = list(prod_col.find({"is_active": True, "$or": word_regexes}).limit(3))
+        matched_products = list(prod_col.find({"is_active": True, "$or": word_regexes}).limit(3))
     else:
-        # Fallback to search query
-        products = list(prod_col.find({
-            "is_active": True,
-            "$or": [
-                {"name": {"$regex": re.escape(query_text), "$options": "i"}},
-                {"category": {"$regex": re.escape(query_text), "$options": "i"}}
-            ]
-        }).limit(3))
+        matched_products = list(prod_col.find({"is_active": True}).limit(3))
 
-    if products:
-        top = products[0]
+    if not matched_products:
         return {
-            "intent": "PRODUCT_SEARCH",
+            "intent": "GENERAL_CATALOG",
             "speech_response": (
-                f"Haan ji, '{top['name']}' stock me available hai! "
-                f"Iska price ₹{top['price']:,.2f} hai aur hamare paas {top['stock']} units available hain. "
-                f"Kya main iska order place kar doon?"
+                "Main Sharma Enterprises ka AI Shopping & Procurement Assistant hoon. "
+                "Aap mujhse raw metals (stainless sheets, copper busbars), industrial hex bolts, "
+                "motor contactors ya welding safety gear ke technical specs, bulk quotation aur live stock ke baare me pooch sakte hain!"
             ),
-            "data": serialize_mongo_doc(products)
+            "data": []
         }
 
+    top_prod = matched_products[0]
+    discounted_price = round(top_prod["price"] * (1 - (top_prod.get("discount_percent", 0.0) / 100.0)), 2)
+
+    # ----------------------------------------------------
+    # INTENT 4: TECHNICAL SPECIFICATIONS & COMPLIANCE
+    # ----------------------------------------------------
+    spec_triggers = ["spec", "tensile", "thickness", "dimension", "size", "standard", "grade", "voltage", "current", "coil", "shade", "rating", "finish", "mm", "din"]
+    if any(st in query_text for st in spec_triggers):
+        specs_dict = top_prod.get("specifications", {})
+        spec_text = "; ".join([f"{k}: {v}" for k, v in specs_dict.items()]) if specs_dict else top_prod.get("description", "")
+        return {
+            "intent": "TECHNICAL_SPECIFICATIONS",
+            "speech_response": (
+                f"'{top_prod['name']}' ke technical specifications yeh hain: {spec_text}. "
+                f"Current Price: ₹{discounted_price:,.2f} (+18% GST). Stock: {top_prod['stock']} units available."
+            ),
+            "data": serialize_mongo_doc(matched_products),
+            "action": {
+                "type": "ADD_TO_CART",
+                "product_id": str(top_prod["_id"]),
+                "product_name": top_prod["name"],
+                "price": discounted_price,
+                "quantity": 1,
+                "label": f"Add to Cart (₹{discounted_price:,.2f})"
+            }
+        }
+
+    # ----------------------------------------------------
+    # INTENT 5: BULK PRICING & GST ESTIMATION
+    # ----------------------------------------------------
+    qty_match = re.search(r'\b(\d+)\s*(unit|units|piece|pieces|box|boxes|sheet|sheets|nos|pc|pcs)?\b', query_text)
+    calc_triggers = ["cost", "kharcha", "total", "calculate", "bulk", "gst", "kitna hoga", "kitne ka", "estimate"]
+    if qty_match and any(ct in query_text for ct in calc_triggers):
+        qty = int(qty_match.group(1))
+        qty = max(1, min(qty, 500))
+        subtotal = round(discounted_price * qty, 2)
+        gst = round(subtotal * 0.18, 2)
+        freight = 0.0 if subtotal > 10000.0 else 350.0
+        final_total = round(subtotal + gst + freight, 2)
+
+        return {
+            "intent": "BULK_QUOTATION",
+            "speech_response": (
+                f"Quotation for {qty} units of '{top_prod['name']}': "
+                f"Subtotal: ₹{subtotal:,.2f}, 18% GST: ₹{gst:,.2f}, Freight: {'FREE (> ₹10k)' if freight == 0 else f'₹{freight}'}. "
+                f"Total Estimated Procurement Cost: ₹{final_total:,.2f}. "
+                f"Available on-hand stock: {top_prod['stock']} units."
+            ),
+            "data": serialize_mongo_doc(matched_products),
+            "action": {
+                "type": "ADD_TO_CART",
+                "product_id": str(top_prod["_id"]),
+                "product_name": top_prod["name"],
+                "price": discounted_price,
+                "quantity": qty,
+                "label": f"Add {qty}x to Cart (₹{final_total:,.2f})"
+            }
+        }
+
+    # ----------------------------------------------------
+    # INTENT 6: STANDARD PRODUCT & STOCK SEARCH
+    # ----------------------------------------------------
+    stock_status_str = f"Stock me {top_prod['stock']} units available hain." if top_prod['stock'] > 0 else "Filhaal out of stock hai."
     return {
-        "intent": "GENERAL_CATALOG",
+        "intent": "PRODUCT_SEARCH",
         "speech_response": (
-            "Main Sharma Enterprises ka AI Shopping Assistant hoon. "
-            "Aap mujhse kisi bhi raw metal sheet, hex bolts, motor contactors ya welding helmet ke price aur stock ke baare me pooch sakte hain!"
+            f"Haan ji, '{top_prod['name']}' humare catalog me available hai! "
+            f"Price: ₹{discounted_price:,.2f} " +
+            (f"(incl. {top_prod['discount_percent']}% discount) " if top_prod.get('discount_percent', 0) > 0 else "") +
+            f"aur {stock_status_str} Kya main iska procurement order place kar doon?"
         ),
-        "data": []
+        "data": serialize_mongo_doc(matched_products),
+        "action": {
+            "type": "ADD_TO_CART",
+            "product_id": str(top_prod["_id"]),
+            "product_name": top_prod["name"],
+            "price": discounted_price,
+            "quantity": 1,
+            "label": f"Add to Cart (₹{discounted_price:,.2f})"
+        }
     }

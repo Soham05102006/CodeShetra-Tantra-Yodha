@@ -38,7 +38,11 @@ import {
   Boxes,
   HelpCircle,
   BarChart3,
-  Bot
+  Bot,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 
 const API_BASE = 'http://localhost:8000/api/ecommerce';
@@ -124,6 +128,8 @@ export default function EcommerceModule({ onTriggerVoice }) {
     }
   ]);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   // Product Form state for Add/Edit
   const [productForm, setProductForm] = useState({
@@ -694,6 +700,98 @@ export default function EcommerceModule({ onTriggerVoice }) {
     }
   };
 
+  // AI Voice Input Recognition (Web Speech API)
+  const startVoiceInput = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      showToast('Speech recognition not supported in this browser. Please type your query.', 'warning');
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'hi-IN'; // Recognizes Hindi / Hinglish and English
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        showToast('Listening... Speak now (Hindi or English)', 'info');
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setIsListening(false);
+        setAiQuery(transcript);
+        handleSendAiQuery(transcript);
+      };
+
+      recognition.onerror = () => {
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.start();
+    } catch {
+      setIsListening(false);
+    }
+  };
+
+  // AI Voice Speech Synthesis
+  const playAiVoice = (text) => {
+    if (!window.speechSynthesis) {
+      showToast('Speech synthesis not supported in this browser', 'warning');
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // Action Execution Bonding (Direct 1-Click Operations)
+  const executeAiAction = (action) => {
+    if (!action) return;
+    if (action.type === 'ADD_TO_CART') {
+      const targetProd = products.find((p) => p._id === action.product_id || p.name === action.product_name) || {
+        _id: action.product_id,
+        name: action.product_name,
+        price: action.price,
+        stock: 50,
+        sku: 'MSME-ITEM',
+        image_url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80'
+      };
+      addToCart(targetProd, action.quantity || 1);
+      setActiveTab('cart');
+    } else if (action.type === 'APPLY_COUPON') {
+      handleApplyCoupon(action.code);
+      setActiveTab('cart');
+    } else if (action.type === 'VIEW_ORDER') {
+      const ord = orders.find((o) => o.order_id === action.order_id);
+      if (ord) setSelectedOrderDetails(ord);
+      setActiveTab('orders');
+    } else if (action.type === 'TRIGGER_CALL') {
+      if (onTriggerVoice) {
+        onTriggerVoice({
+          entity_name: action.customer_name || customerForm.name,
+          phone_number: action.phone_number || customerForm.phone,
+          invoice_number: 'ECOM-INQUIRY',
+          amount_due: 0
+        });
+      } else {
+        showToast(`Vernacular Voice Call initiated to ${action.phone_number}!`, 'info');
+      }
+    }
+  };
+
   // AI Assistant Query Handler
   const handleSendAiQuery = async (queryText = aiQuery) => {
     const text = (queryText || '').trim();
@@ -712,7 +810,8 @@ export default function EcommerceModule({ onTriggerVoice }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query: text,
-          phone_number: customerForm.phone
+          phone_number: customerForm.phone,
+          customer_name: customerForm.name
         })
       });
 
@@ -725,6 +824,7 @@ export default function EcommerceModule({ onTriggerVoice }) {
             text: data.speech_response,
             intent: data.intent,
             payload: data.data,
+            action: data.action,
             time: 'Just now'
           }
         ]);
@@ -2274,59 +2374,122 @@ export default function EcommerceModule({ onTriggerVoice }) {
           {/* Quick Preset Queries */}
           <div className="flex flex-wrap gap-2 pt-1">
             {[
-              "What is the price of stainless steel sheet?",
-              "Check stock for Grade 8.8 Hex Bolts",
-              "Track order ORD-2026-8001",
-              "Bhai motor contactor ka price aur stock kya hai?",
-              "Do you have solar welding helmets in stock?"
-            ].map((q, idx) => (
+              { q: "What is the tensile strength of Grade 304 Steel Sheet?", label: "Tensile Strength (304 Sheet)", icon: "🔩" },
+              { q: "Calculate price for 10 units of 3-Phase Contactor with GST", label: "Quotation: 10x Contactors + GST", icon: "📦" },
+              { q: "Which discount coupons can I use right now?", label: "Available MSME Coupons", icon: "🎟️" },
+              { q: "Track order ORD-2026-8001", label: "Track ORD-2026-8001", icon: "🚚" },
+              { q: "Call me on phone to discuss bulk order", label: "Request Phone Callback", icon: "📞" },
+              { q: "Bhai welding helmet ka shade aur stock kitna hai?", label: "Welding Helmet Specs (Hindi)", icon: "🇮🇳" }
+            ].map((chip, idx) => (
               <button
                 key={idx}
                 onClick={() => {
-                  setAiQuery(q);
-                  handleSendAiQuery(q);
+                  setAiQuery(chip.q);
+                  handleSendAiQuery(chip.q);
                 }}
-                className="px-3 py-1.5 rounded-xl bg-[#161e31] hover:bg-[#1e2942] border border-[#222e47] text-slate-300 text-xs transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#161e31] hover:bg-[#1e2942] border border-[#222e47] text-slate-300 text-xs transition-colors"
               >
-                "{q}"
+                <span>{chip.icon}</span>
+                <span>{chip.label}</span>
               </button>
             ))}
           </div>
 
           {/* Chat Window */}
-          <div className="h-96 overflow-y-auto space-y-3 p-4 rounded-xl bg-[#0c1017] border border-[#1e273c]">
+          <div className="h-96 overflow-y-auto space-y-3.5 p-4 rounded-xl bg-[#0c1017] border border-[#1e273c]">
             {aiChatHistory.map((msg, i) => (
               <div
                 key={i}
                 className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {msg.role === 'assistant' && (
-                  <div className="w-7 h-7 rounded-lg bg-purple-600/30 text-purple-300 flex items-center justify-center shrink-0 mt-1">
+                  <div className="w-8 h-8 rounded-lg bg-purple-600/30 text-purple-300 flex items-center justify-center shrink-0 mt-1 shadow-sm">
                     <Bot className="w-4 h-4" />
                   </div>
                 )}
                 <div
-                  className={`max-w-xl p-3.5 rounded-2xl text-xs leading-relaxed ${
+                  className={`max-w-xl p-4 rounded-2xl text-xs leading-relaxed space-y-2.5 ${
                     msg.role === 'user'
                       ? 'bg-sky-600 text-white rounded-br-none shadow-md shadow-sky-600/20'
-                      : 'bg-[#161e31] text-slate-200 border border-[#222e47] rounded-bl-none'
+                      : 'bg-[#161e31] text-slate-200 border border-[#222e47] rounded-bl-none shadow-sm'
                   }`}
                 >
-                  <p>{msg.text}</p>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="leading-relaxed">{msg.text}</p>
+                    {msg.role === 'assistant' && (
+                      <button
+                        onClick={() => playAiVoice(msg.text)}
+                        className="text-purple-400 hover:text-purple-300 p-1 rounded-md hover:bg-[#1e2840] shrink-0"
+                        title="Listen to Vernacular Speech Output"
+                      >
+                        <Volume2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Direct Bonded Action Button */}
+                  {msg.action && (
+                    <div className="pt-2 border-t border-[#23314f]">
+                      <button
+                        onClick={() => executeAiAction(msg.action)}
+                        className={`w-full py-2 px-3 rounded-xl font-semibold text-xs transition-all shadow-md flex items-center justify-center gap-2 ${
+                          msg.action.type === 'ADD_TO_CART'
+                            ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20'
+                            : msg.action.type === 'APPLY_COUPON'
+                            ? 'bg-sky-600 hover:bg-sky-500 text-white shadow-sky-600/20'
+                            : msg.action.type === 'TRIGGER_CALL'
+                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white'
+                            : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                        }`}
+                      >
+                        {msg.action.type === 'ADD_TO_CART' ? (
+                          <ShoppingCart className="w-3.5 h-3.5" />
+                        ) : msg.action.type === 'APPLY_COUPON' ? (
+                          <Tag className="w-3.5 h-3.5" />
+                        ) : msg.action.type === 'TRIGGER_CALL' ? (
+                          <PhoneCall className="w-3.5 h-3.5" />
+                        ) : (
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        )}
+                        <span>{msg.action.label || 'Take Action'}</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Product Preview Cards */}
                   {msg.payload && Array.isArray(msg.payload) && msg.payload.length > 0 && (
-                    <div className="mt-3 pt-2 border-t border-slate-700 space-y-1.5">
+                    <div className="pt-2 border-t border-slate-700/60 space-y-1.5">
                       {msg.payload.map((item, idx) => (
-                        <div key={idx} className="p-2 rounded bg-[#0c1017] border border-[#1e273c] flex justify-between items-center">
-                          <div>
-                            <div className="font-semibold text-slate-200">{item.name}</div>
-                            <div className="text-[10px] text-slate-400">Stock: {item.stock} | SKU: {item.sku}</div>
+                        <div
+                          key={idx}
+                          className="p-2.5 rounded-xl bg-[#0c1017] border border-[#1e273c] flex justify-between items-center gap-3"
+                        >
+                          <div className="min-w-0">
+                            <div className="font-semibold text-slate-100 truncate">{item.name}</div>
+                            <div className="text-[10px] text-slate-400">
+                              Stock: <span className="text-emerald-400 font-mono">{item.stock} units</span> • SKU: {item.sku}
+                            </div>
                           </div>
-                          <span className="font-mono font-bold text-sky-400">₹{item.price?.toLocaleString('en-IN')}</span>
+                          <div className="text-right shrink-0">
+                            <div className="font-mono font-bold text-sky-400">
+                              ₹{item.price?.toLocaleString('en-IN')}
+                            </div>
+                            <button
+                              onClick={() => {
+                                addToCart(item, 1);
+                                showToast(`Added '${item.name}' to cart!`, 'success');
+                              }}
+                              className="text-[10px] text-emerald-400 hover:underline mt-0.5"
+                            >
+                              + Add to Cart
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
                   )}
-                  <span className="text-[9px] text-slate-400 block mt-1.5 opacity-70 text-right">
+
+                  <span className="text-[9px] text-slate-400 block mt-1 opacity-70 text-right">
                     {msg.time}
                   </span>
                 </div>
@@ -2335,12 +2498,12 @@ export default function EcommerceModule({ onTriggerVoice }) {
             {isAiLoading && (
               <div className="flex items-center gap-2 text-xs text-purple-400 p-2">
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                <span>AI is searching catalog and synthesizing response...</span>
+                <span>AI is searching technical specs in MongoDB and synthesizing response...</span>
               </div>
             )}
           </div>
 
-          {/* Chat Input */}
+          {/* Chat Input with Speech Microphone & Keyboard Send */}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -2348,13 +2511,34 @@ export default function EcommerceModule({ onTriggerVoice }) {
             }}
             className="flex items-center gap-2"
           >
-            <input
-              type="text"
-              placeholder="Ask anything about products, pricing, stock, or order status..."
-              value={aiQuery}
-              onChange={(e) => setAiQuery(e.target.value)}
-              className="flex-1 px-4 py-2.5 rounded-xl bg-[#161e31] border border-[#222e47] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-            />
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder={isListening ? "Listening to voice input..." : "Ask technical specs, quotations with GST, stock, coupons, or order status..."}
+                value={aiQuery}
+                onChange={(e) => setAiQuery(e.target.value)}
+                className={`w-full px-4 py-2.5 rounded-xl bg-[#161e31] border text-xs text-white placeholder-slate-500 focus:outline-none transition-all ${
+                  isListening
+                    ? 'border-purple-500 ring-2 ring-purple-500/30'
+                    : 'border-[#222e47] focus:border-purple-500'
+                }`}
+              />
+            </div>
+
+            {/* Voice Input Mic Button */}
+            <button
+              type="button"
+              onClick={startVoiceInput}
+              className={`p-2.5 rounded-xl border transition-all ${
+                isListening
+                  ? 'bg-rose-600 text-white border-rose-500 animate-pulse'
+                  : 'bg-[#161e31] hover:bg-[#1f2b45] text-purple-400 border-[#222e47]'
+              }`}
+              title="Speak Query (Voice-to-Text in Hindi / English)"
+            >
+              {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            </button>
+
             <button
               type="submit"
               disabled={isAiLoading || !aiQuery.trim()}
@@ -2926,3 +3110,4 @@ export default function EcommerceModule({ onTriggerVoice }) {
     </div>
   );
 }
+
