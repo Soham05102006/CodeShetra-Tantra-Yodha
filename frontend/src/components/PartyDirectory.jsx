@@ -212,6 +212,140 @@ export default function PartyDirectory({ onTriggerVoice }) {
     return `${prefix} XXXXX`;
   };
 
+  // Generate dynamic 6-month performance curve and metrics based on selected party's performance
+  const getPerformanceData = (party) => {
+    if (!party) {
+      return {
+        points: [60, 52, 48, 40, 28, 20],
+        strokePath: 'M 0 60 C 30 60, 30 52, 60 52 C 90 52, 90 48, 120 48 C 150 48, 150 40, 180 40 C 210 40, 210 28, 240 28 C 270 28, 270 20, 300 20',
+        areaPath: 'M 0 60 C 30 60, 30 52, 60 52 C 90 52, 90 48, 120 48 C 150 48, 150 40, 180 40 C 210 40, 210 28, 240 28 C 270 28, 270 20, 300 20 L 300 80 L 0 80 Z',
+        riskLevel: 'LOW',
+        riskColor: 'emerald',
+        strokeColor: '#22d3ee',
+        gradientStart: '#06b6d4',
+        gradientEnd: '#10b981',
+        trendText: '+4.8% Promptness',
+        onTimeRate: '96%',
+        volatility: 'Low',
+        months: ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+        xs: [0, 60, 120, 180, 240, 300]
+      };
+    }
+
+    const score = party.reliability_score || 90;
+    const delay = party.avg_payment_delay_days || 4.2;
+    const id = party.party_id || 1;
+
+    // Determine Risk Profile & Visual Theme
+    let riskLevel = party.risk_level || 'LOW';
+    let riskColor = 'emerald';
+    let strokeColor = '#22d3ee';
+    let gradientStart = '#06b6d4';
+    let gradientEnd = '#10b981';
+    let trendText = '+4.2% Promptness';
+    let onTimeRate = `${score}%`;
+    let volatility = 'Low';
+
+    if (score >= 95) {
+      // Tier 1 Excellent (Apex Steel 96%, Jai Hind 98%)
+      riskLevel = 'LOW';
+      riskColor = 'emerald';
+      strokeColor = '#10b981';
+      gradientStart = '#10b981';
+      gradientEnd = '#06b6d4';
+      trendText = '+6.5% Promptness';
+      onTimeRate = '98.5%';
+      volatility = 'Minimal';
+    } else if (score >= 88) {
+      // Low Risk Strong (Sharma Metal 94%, Mahata 91%, Raj Logistics 89%)
+      riskLevel = 'LOW';
+      riskColor = 'emerald';
+      strokeColor = '#22d3ee';
+      gradientStart = '#06b6d4';
+      gradientEnd = '#10b981';
+      trendText = '+4.2% Promptness';
+      onTimeRate = `${score}%`;
+      volatility = 'Low';
+    } else if (score >= 78) {
+      // Moderate / Medium Risk (Verma Logistics 85%)
+      riskLevel = 'MEDIUM';
+      riskColor = 'amber';
+      strokeColor = '#f59e0b';
+      gradientStart = '#f59e0b';
+      gradientEnd = '#ea580c';
+      trendText = '-1.8% Delay Risk';
+      onTimeRate = `${score}%`;
+      volatility = 'Moderate';
+    } else {
+      // Higher Risk / High Delay (Karan Electricals 72%)
+      riskLevel = 'HIGH RISK';
+      riskColor = 'rose';
+      strokeColor = '#f43f5e';
+      gradientStart = '#f43f5e';
+      gradientEnd = '#b91c1c';
+      trendText = '-7.4% High Delay';
+      onTimeRate = `${score}%`;
+      volatility = 'High';
+    }
+
+    // Generate 6 chronological monthly performance heights (lower y in SVG means higher performance)
+    // SVG viewBox height is 80 (y=10 is peak performance, y=70 is poor performance)
+    let rawHeights = [];
+    if (score >= 95) {
+      // Consistent near top
+      rawHeights = [38, 30, 26, 20, 16, 12];
+    } else if (score >= 90) {
+      // Upward trend to peak
+      rawHeights = [64, 52, 44, 34, 25, 18];
+    } else if (score >= 85) {
+      // Steady moderate wave
+      rawHeights = [56, 46, 52, 38, 32, 26];
+    } else if (score >= 78) {
+      // Volatile fluctuations
+      rawHeights = [44, 58, 50, 62, 46, 54];
+    } else {
+      // High delay curve (sloping downward / higher risk)
+      rawHeights = [32, 40, 52, 60, 56, 68];
+    }
+
+    // Apply party-specific unique jitter
+    const jitter = (id * 13) % 7;
+    const points = rawHeights.map((h, i) =>
+      Math.max(12, Math.min(72, h + ((i % 2 === 0 ? 1 : -1) * (jitter % 5))))
+    );
+
+    // Generate smooth SVG Bezier path
+    const xs = [0, 60, 120, 180, 240, 300];
+    let strokePath = `M ${xs[0]} ${points[0]}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const x0 = xs[i];
+      const y0 = points[i];
+      const x1 = xs[i + 1];
+      const y1 = points[i + 1];
+      const mx = (x0 + x1) / 2;
+      strokePath += ` C ${mx} ${y0}, ${mx} ${y1}, ${x1} ${y1}`;
+    }
+    const areaPath = `${strokePath} L 300 80 L 0 80 Z`;
+
+    return {
+      points,
+      strokePath,
+      areaPath,
+      riskLevel,
+      riskColor,
+      strokeColor,
+      gradientStart,
+      gradientEnd,
+      trendText,
+      onTimeRate,
+      volatility,
+      months: ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+      xs
+    };
+  };
+
+  const perf = getPerformanceData(selectedParty);
+
   return (
     <div className="space-y-6 pb-12 font-sans text-slate-100">
       {/* Toast Notification */}
@@ -589,37 +723,106 @@ export default function PartyDirectory({ onTriggerVoice }) {
                 </div>
               </div>
 
-              {/* PAYMENT RISK GRAPH (Matching Screenshot) */}
+              {/* PAYMENT RISK GRAPH (Dynamic Based On Performance) */}
               <div>
                 <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 font-mono">
-                  <span>PAYMENT RISK GRAPH</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                    {selectedParty.risk_level || 'LOW'}
+                  <span className="flex items-center gap-1.5">
+                    <TrendingUp className="w-3.5 h-3.5 text-cyan-400" />
+                    PAYMENT RISK GRAPH
                   </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      {perf.trendText}
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ${
+                        perf.riskColor === 'emerald'
+                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-[0_0_8px_rgba(16,185,129,0.2)]'
+                          : perf.riskColor === 'amber'
+                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/30 shadow-[0_0_8px_rgba(245,158,11,0.2)]'
+                          : 'bg-rose-500/10 text-rose-400 border-rose-500/30 shadow-[0_0_8px_rgba(244,63,94,0.2)]'
+                      }`}
+                    >
+                      {perf.riskLevel}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Glowing Neon Gradient Area Wave */}
-                <div className="h-20 w-full rounded-lg bg-gradient-to-b from-[#0e1b26] to-[#071018] border border-cyan-950 p-2 relative overflow-hidden">
-                  <svg className="w-full h-full" viewBox="0 0 300 80" preserveAspectRatio="none">
+                {/* Dynamic Glowing Neon Gradient Area Wave */}
+                <div className="h-24 w-full rounded-lg bg-gradient-to-b from-[#0c1622] to-[#070e17] border border-slate-800 p-2 relative overflow-hidden group">
+                  <svg className="w-full h-16" viewBox="0 0 300 80" preserveAspectRatio="none">
                     <defs>
-                      <linearGradient id="waveGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.6" />
-                        <stop offset="100%" stopColor="#10b981" stopOpacity="0.05" />
+                      <linearGradient id={`waveGrad-${selectedParty.party_id}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={perf.gradientStart} stopOpacity="0.5" />
+                        <stop offset="100%" stopColor={perf.gradientEnd} stopOpacity="0.02" />
                       </linearGradient>
+                      <filter id={`glow-${selectedParty.party_id}`} x="-20%" y="-20%" width="140%" height="140%">
+                        <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor={perf.strokeColor} floodOpacity="0.6" />
+                      </filter>
                     </defs>
                     {/* Area Fill */}
                     <path
-                      d="M 0 65 Q 40 60 80 50 T 160 55 T 240 25 T 300 20 L 300 80 L 0 80 Z"
-                      fill="url(#waveGradient)"
+                      d={perf.areaPath}
+                      fill={`url(#waveGrad-${selectedParty.party_id})`}
+                      className="transition-all duration-500"
                     />
                     {/* Top Glowing Stroke */}
                     <path
-                      d="M 0 65 Q 40 60 80 50 T 160 55 T 240 25 T 300 20"
-                      stroke="#22d3ee"
+                      d={perf.strokePath}
+                      stroke={perf.strokeColor}
                       strokeWidth="2.5"
                       fill="none"
+                      filter={`url(#glow-${selectedParty.party_id})`}
+                      className="transition-all duration-500"
                     />
+                    {/* Interactive Marker Nodes */}
+                    {perf.points.map((py, idx) => (
+                      <circle
+                        key={idx}
+                        cx={perf.xs[idx]}
+                        cy={py}
+                        r={idx === perf.points.length - 1 ? 4 : 2.5}
+                        fill={idx === perf.points.length - 1 ? perf.strokeColor : '#0f172a'}
+                        stroke={perf.strokeColor}
+                        strokeWidth="2"
+                        className="transition-all duration-500"
+                      />
+                    ))}
                   </svg>
+                  {/* Timeline Months Legend */}
+                  <div className="flex items-center justify-between px-1 text-[9px] font-mono text-slate-500 pt-1">
+                    {perf.months.map((m, i) => (
+                      <span key={i} className={i === perf.months.length - 1 ? 'text-slate-300 font-bold' : ''}>
+                        {m}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Subtext KPI Indicators */}
+                <div className="grid grid-cols-3 gap-2 mt-2 pt-2 border-t border-slate-800/60 text-center font-mono">
+                  <div className="bg-[#0b0f19] py-1 px-1.5 rounded border border-slate-800/80">
+                    <span className="text-[9px] text-slate-500 block">Fulfillment</span>
+                    <span className="text-xs font-bold text-white">{perf.onTimeRate}</span>
+                  </div>
+                  <div className="bg-[#0b0f19] py-1 px-1.5 rounded border border-slate-800/80">
+                    <span className="text-[9px] text-slate-500 block">Avg Settle</span>
+                    <span className="text-xs font-bold text-cyan-300">{selectedParty.avg_payment_delay_days || 4.2}d</span>
+                  </div>
+                  <div className="bg-[#0b0f19] py-1 px-1.5 rounded border border-slate-800/80">
+                    <span className="text-[9px] text-slate-500 block">Volatility</span>
+                    <span
+                      className={`text-xs font-bold ${
+                        perf.riskColor === 'emerald'
+                          ? 'text-emerald-400'
+                          : perf.riskColor === 'amber'
+                          ? 'text-amber-400'
+                          : 'text-rose-400'
+                      }`}
+                    >
+                      {perf.volatility}
+                    </span>
+                  </div>
                 </div>
               </div>
 
