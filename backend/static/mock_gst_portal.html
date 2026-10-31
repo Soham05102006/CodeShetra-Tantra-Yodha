@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Goods and Services Tax (GST) Portal - Government of India</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    body {
+      background-color: #f1f5f9;
+      color: #1e293b;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .gov-flag-bar {
+      height: 6px;
+      background: linear-gradient(90deg, #ff9933 0%, #ff9933 33.3%, #ffffff 33.3%, #ffffff 66.6%, #138808 66.6%, #138808 100%);
+    }
+    .header {
+      background-color: #0b3b60;
+      color: #ffffff;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .emblem-icon {
+      width: 48px;
+      height: 48px;
+      background: #1e4f79;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 20px;
+      color: #ff9933;
+      border: 2px solid #ffffff33;
+    }
+    .header-title h1 {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .header-title p {
+      font-size: 12px;
+      color: #93c5fd;
+    }
+    .user-pill {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      text-align: right;
+    }
+    .user-pill .name {
+      font-weight: 600;
+      color: #ffffff;
+    }
+    .user-pill .gstin {
+      color: #cbd5e1;
+      font-size: 11px;
+    }
+    .sub-nav {
+      background: #082942;
+      color: #94a3b8;
+      padding: 8px 32px;
+      font-size: 12px;
+      display: flex;
+      gap: 24px;
+    }
+    .sub-nav span.active {
+      color: #38bdf8;
+      font-weight: 600;
+      border-bottom: 2px solid #38bdf8;
+      padding-bottom: 4px;
+    }
+    .main-container {
+      max-width: 1040px;
+      margin: 28px auto;
+      padding: 0 20px;
+      width: 100%;
+      flex-grow: 1;
+    }
+    .notice-card {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      padding: 12px 18px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: #1e40af;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      padding: 24px 28px;
+      margin-bottom: 24px;
+    }
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-subtitle {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 20px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group.full {
+      grid-column: span 2;
+    }
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    input, select {
+      padding: 10px 14px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      font-size: 14px;
+      color: #0f172a;
+      background: #f8fafc;
+      transition: all 0.2s ease;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #0284c7;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+    }
+    .tax-breakup-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      font-size: 13px;
+    }
+    .tax-breakup-table th {
+      background: #f1f5f9;
+      padding: 10px;
+      text-align: left;
+      font-weight: 600;
+      color: #334155;
+      border: 1px solid #e2e8f0;
+    }
+    .tax-breakup-table td {
+      padding: 10px;
+      border: 1px solid #e2e8f0;
+    }
+    .tax-breakup-table td.amount {
+      text-align: right;
+      font-family: monospace;
+      font-weight: 600;
+    }
+    .total-row {
+      background: #f8fafc;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .checkbox-container {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin: 18px 0;
+      font-size: 13px;
+      color: #475569;
+    }
+    .checkbox-container input {
+      margin-top: 2px;
+    }
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 14px;
+      margin-top: 24px;
+    }
+    .btn {
+      padding: 11px 24px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #334155;
+    }
+    .btn-secondary:hover {
+      background: #cbd5e1;
+    }
+    .btn-primary {
+      background: #0284c7;
+      color: #ffffff;
+      box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25);
+    }
+    .btn-primary:hover {
+      background: #0369a1;
+    }
+    .btn-primary:active {
+      transform: translateY(1px);
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .badge-pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .badge-success {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-card {
+      background: #ffffff;
+      border-radius: 14px;
+      max-width: 540px;
+      width: 90%;
+      padding: 30px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      background: #dcfce7;
+      color: #16a34a;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto 16px;
+    }
+    .footer {
+      background: #0b3b60;
+      color: #94a3b8;
+      text-align: center;
+      padding: 16px;
+      font-size: 12px;
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="gov-flag-bar"></div>
+  
+  <header class="header">
+    <div class="header-left">
+      <div class="emblem-icon">GST</div>
+      <div class="header-title">
+        <h1>Goods and Services Tax Portal</h1>
+        <p>Central Board of Indirect Taxes and Customs (CBIC) • Govt. of India</p>
+      </div>
+    </div>
+    <div class="user-pill" id="user-profile">
+      <div class="name">SHARMA ENTERPRISES PVT LTD</div>
+      <div class="gstin">GSTIN: 27AABCS1429B1Z (Maharashtra)</div>
+    </div>
+  </header>
+
+  <div class="sub-nav">
+    <span class="active">Services & Returns</span>
+    <span>Challan Generation</span>
+    <span>Payment History</span>
+    <span>Input Tax Credit (GSTR-2B)</span>
+    <span>Notices & Orders</span>
+  </div>
+
+  <main class="main-container">
+    <div class="notice-card" id="gst-notice">
+      <span><strong>Notice Ref: GST/MUM/2026/OCT-882:</strong> GSTR-3B monthly filing deadline is active. Verify all ITC claims and liability challans prior to submission.</span>
+      <span class="status-badge badge-pending" id="status-badge">READY TO FILE</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>Form GSTR-3B: Monthly Return & Payment Challan</span>
+      </div>
+      <div class="card-subtitle">
+        Self-assessed summary return of outward supplies and input tax credit liability.
+      </div>
+
+      <form id="gst-filing-form" onsubmit="event.preventDefault(); handleSubmit();">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="gstin-input">Taxpayer GSTIN</label>
+            <input type="text" id="gstin-input" name="gstin" value="27AABCS1429B1Z" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="legal-name-input">Legal Name of Business</label>
+            <input type="text" id="legal-name-input" name="legalName" value="SHARMA ENTERPRISES PVT LTD" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="financial-year">Financial Year</label>
+            <select id="financial-year" name="finYear">
+              <option value="2026-27" selected>2026-2027</option>
+              <option value="2025-26">2025-2026</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="return-period">Return Period</label>
+            <select id="return-period" name="period">
+              <option value="October" selected>October 2026</option>
+              <option value="September">September 2026</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="invoice-ref-input">Source Invoice / Ledger Ref</label>
+            <input type="text" id="invoice-ref-input" name="invoiceRef" placeholder="e.g. INV-2026-001" required>
+          </div>
+
+          <div class="form-group">
+            <label for="turnover-input">Taxable Outward Supplies (₹)</label>
+            <input type="number" id="turnover-input" name="turnover" placeholder="45000.00" step="0.01" oninput="calculateTax()" required>
+          </div>
+        </div>
+
+        <h3 style="margin-top: 20px; font-size: 14px; font-weight: 700; color: #1e293b;">Tax Breakdown (18% GST Rate)</h3>
+        <table class="tax-breakup-table">
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Rate (%)</th>
+              <th>Taxable Base (₹)</th>
+              <th style="text-align: right;">Liability Amount (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Central GST (CGST)</td>
+              <td>9.0%</td>
+              <td id="base-cgst">₹0.00</td>
+              <td class="amount" id="tax-cgst">₹0.00</td>
+            </tr>
+            <tr>
+              <td>State GST (SGST)</td>
+              <td>9.0%</td>
+              <td id="base-sgst">₹0.00</td>
+              <td class="amount" id="tax-sgst">₹0.00</td>
+            </tr>
+            <tr class="total-row">
+              <td colspan="3"><strong>Total Tax Payable via Cash Ledger (PMT-06)</strong></td>
+              <td class="amount" id="total-gst" style="color: #0284c7; font-size: 15px;">₹0.00</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="checkbox-container">
+          <input type="checkbox" id="auth-checkbox" required>
+          <label for="auth-checkbox" style="font-weight: 400; text-transform: none; font-size: 12px; cursor: pointer;">
+            I hereby solemnly affirm and declare that the information given hereinabove is true and correct to the best of my knowledge and belief and nothing has been concealed therefrom.
+          </label>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn btn-secondary" onclick="resetForm()">Clear Form</button>
+          <button type="submit" class="btn btn-primary" id="submit-gst-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            Generate Challan & File Return
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <div class="modal-overlay" id="success-modal">
+    <div class="modal-card">
+      <div class="success-icon">✓</div>
+      <h2 style="font-size: 20px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">GSTR-3B Challan Created!</h2>
+      <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">
+        Challan generated successfully and queued for instant electronic settlement.
+      </p>
+      <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 14px; text-align: left; font-size: 13px; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+          <span style="color: #64748b;">Challan PIN (CPIN):</span>
+          <strong id="modal-cpin" style="font-family: monospace; color: #0369a1;">26102700084920</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+          <span style="color: #64748b;">Invoice Reference:</span>
+          <strong id="modal-inv">-</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+          <span style="color: #64748b;">Total Amount:</span>
+          <strong id="modal-total" style="color: #16a34a;">₹0.00</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: #64748b;">Acknowledgement No (ARN):</span>
+          <strong id="modal-arn" style="font-family: monospace;">AA2710260019283</strong>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="closeModal()">
+        Done & Return to Dashboard
+      </button>
+    </div>
+  </div>
+
+  <footer class="footer">
+    © 2026 Goods and Services Tax Network (GSTN). Designed for Central Board of Indirect Taxes and Customs (CBIC).
+  </footer>
+
+  <script>
+    function calculateTax() {
+      const turnoverInput = document.getElementById('turnover-input');
+      const turnover = parseFloat(turnoverInput.value) || 0;
+      const cgst = turnover * 0.09;
+      const sgst = turnover * 0.09;
+      const total = cgst + sgst;
+
+      document.getElementById('base-cgst').textContent = '₹' + turnover.toLocaleString('en-IN', {minimumFractionDigits: 2});
+      document.getElementById('base-sgst').textContent = '₹' + turnover.toLocaleString('en-IN', {minimumFractionDigits: 2});
+      document.getElementById('tax-cgst').textContent = '₹' + cgst.toLocaleString('en-IN', {minimumFractionDigits: 2});
+      document.getElementById('tax-sgst').textContent = '₹' + sgst.toLocaleString('en-IN', {minimumFractionDigits: 2});
+      document.getElementById('total-gst').textContent = '₹' + total.toLocaleString('en-IN', {minimumFractionDigits: 2});
+    }
+
+    function handleSubmit() {
+      const invoiceRef = document.getElementById('invoice-ref-input').value;
+      const turnover = parseFloat(document.getElementById('turnover-input').value) || 0;
+      const total = turnover * 0.18;
+
+      const randomCpin = '261027' + Math.floor(10000000 + Math.random() * 90000000);
+      const randomArn = 'AA271026' + Math.floor(1000000 + Math.random() * 9000000);
+
+      document.getElementById('modal-cpin').textContent = randomCpin;
+      document.getElementById('modal-inv').textContent = invoiceRef;
+      document.getElementById('modal-total').textContent = '₹' + total.toLocaleString('en-IN', {minimumFractionDigits: 2});
+      document.getElementById('modal-arn').textContent = randomArn;
+
+      const badge = document.getElementById('status-badge');
+      badge.textContent = 'CHALLAN FILED (CPIN: ' + randomCpin.slice(-6) + ')';
+      badge.className = 'status-badge badge-success';
+
+      document.getElementById('success-modal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('success-modal').classList.remove('active');
+    }
+
+    function resetForm() {
+      document.getElementById('gst-filing-form').reset();
+      calculateTax();
+      const badge = document.getElementById('status-badge');
+      badge.textContent = 'READY TO FILE';
+      badge.className = 'status-badge badge-pending';
+    }
+  </script>
+</body>
+</html>
