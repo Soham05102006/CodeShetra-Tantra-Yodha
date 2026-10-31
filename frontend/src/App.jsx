@@ -7,6 +7,7 @@ import LiveComputerUseCard from './components/LiveComputerUseCard';
 import LedgerTableCard from './components/LedgerTableCard';
 import AgentAuditTrailsCard from './components/AgentAuditTrailsCard';
 import ApprovalModal from './components/ApprovalModal';
+import LedgerAndInvoices from './components/LedgerAndInvoices';
 import { 
   PhoneCall, 
   CheckCircle2, 
@@ -344,60 +345,81 @@ export default function App() {
 
         {/* Dashboard Content */}
         <main className="p-6 space-y-5 max-w-[1700px] w-full mx-auto">
-          {/* Live Workflow Stepper Bar */}
-          <LiveWorkflowBar 
-            workflowStatus={workflowStatus}
-            activeStep={activeStep}
-            isRunning={isRunning}
-            onPlay={() => handlePlay()}
-            onPause={handlePause}
-            onStepClick={(stepIdx) => {
-              setActiveStep(stepIdx);
-              if (stepIdx === 3) setIsModalOpen(true);
-            }}
-          />
-
-          {/* 4 Metric Cards */}
-          <MetricsRow 
-            totalInvoiced={`₹${totalInvoicedSum > 0 ? totalInvoicedSum.toLocaleString('en-IN') : '3,42,500'}`}
-            unresolvedOverdue={`₹${totalOverdueSum > 0 ? totalOverdueSum.toLocaleString('en-IN') : '45,000'}`}
-            completedCalls="3 Today"
-            pendingApprovals={pendingApprovals.length > 0 ? pendingApprovals.length : 1}
-            onOpenApprovalQueue={() => setIsModalOpen(true)}
-          />
-
-          {/* Main 2-Column Cockpit Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-            {/* Left 8-Cols: Live Computer Use + Ledger Table */}
-            <div className="lg:col-span-8 space-y-5">
-              <LiveComputerUseCard 
-                screenshotUrl={currentScreenshot}
-                browserSteps={browserSteps}
-                currentAction={
-                  isRunning 
-                    ? "Executing Autonomous Playwright Browser Steps..." 
-                    : "Filling out Form ITC ₹42,500..."
-                }
-                subAction={currentReasoning || "Action Logs..."}
-                currentReasoning={currentReasoning}
-                isRunning={isRunning}
-                onSubmitFiling={handleTriggerBrowserDemo}
-                onActionMenu={() => {}}
-              />
-
-              <LedgerTableCard 
-                transactions={transactions}
-                onCallDebtor={(row) => handleTriggerVoice(row)}
-                onRunAgent={(inv) => handlePlay(inv)}
-                onActionMenu={() => {}}
-              />
-            </div>
-
-            {/* Right 4-Cols: Agent Audit Trails (Live) */}
-            <div className="lg:col-span-4">
+          {activeNav === 'Ledger & Invoices' ? (
+            <LedgerAndInvoices 
+              transactions={transactions}
+              onTriggerVoice={(inv) => handleTriggerVoice(inv)}
+              onRunWorkflow={(inv) => handlePlay(inv)}
+              onUploadSuccess={fetchData}
+            />
+          ) : activeNav === 'Audit Logs' ? (
+            <div className="space-y-5">
+              <div className="flex items-center justify-between pb-2 border-b border-[#1a2335]">
+                <div>
+                  <h2 className="text-base font-bold text-white">Full Telemetry & Execution Audit Logs</h2>
+                  <p className="text-xs text-slate-400">Verifiable trace logs, LangGraph checkpoints, and circuit breaker gates</p>
+                </div>
+              </div>
               <AgentAuditTrailsCard logs={auditLogs} />
             </div>
-          </div>
+          ) : (
+            <>
+              {/* Live Workflow Stepper Bar */}
+              <LiveWorkflowBar 
+                workflowStatus={workflowStatus}
+                activeStep={activeStep}
+                isRunning={isRunning}
+                onPlay={() => handlePlay()}
+                onPause={handlePause}
+                onStepClick={(stepIdx) => {
+                  setActiveStep(stepIdx);
+                  if (stepIdx === 3) setIsModalOpen(true);
+                }}
+              />
+
+              {/* 4 Metric Cards */}
+              <MetricsRow 
+                totalInvoiced={`₹${totalInvoicedSum > 0 ? totalInvoicedSum.toLocaleString('en-IN') : '3,42,500'}`}
+                unresolvedOverdue={`₹${totalOverdueSum > 0 ? totalOverdueSum.toLocaleString('en-IN') : '45,000'}`}
+                completedCalls="3 Today"
+                pendingApprovals={pendingApprovals.length > 0 ? pendingApprovals.length : 1}
+                onOpenApprovalQueue={() => setIsModalOpen(true)}
+              />
+
+              {/* Main 2-Column Cockpit Section */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+                {/* Left 8-Cols: Live Computer Use + Ledger Table */}
+                <div className="lg:col-span-8 space-y-5">
+                  <LiveComputerUseCard 
+                    screenshotUrl={currentScreenshot}
+                    browserSteps={browserSteps}
+                    currentAction={
+                      isRunning 
+                        ? "Executing Autonomous Playwright Browser Steps..." 
+                        : "Filling out Form ITC ₹42,500..."
+                    }
+                    subAction={currentReasoning || "Action Logs..."}
+                    currentReasoning={currentReasoning}
+                    isRunning={isRunning}
+                    onSubmitFiling={handleTriggerBrowserDemo}
+                    onActionMenu={() => {}}
+                  />
+
+                  <LedgerTableCard 
+                    transactions={transactions}
+                    onCallDebtor={(row) => handleTriggerVoice(row)}
+                    onRunAgent={(inv) => handlePlay(inv)}
+                    onActionMenu={() => {}}
+                  />
+                </div>
+
+                {/* Right 4-Cols: Agent Audit Trails (Live) */}
+                <div className="lg:col-span-4">
+                  <AgentAuditTrailsCard logs={auditLogs} />
+                </div>
+              </div>
+            </>
+          )}
         </main>
       </div>
 

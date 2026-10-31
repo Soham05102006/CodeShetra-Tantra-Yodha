@@ -25,9 +25,10 @@ CREATE TABLE IF NOT EXISTS ledger_transactions (
     invoice_date TEXT NOT NULL,
     amount_due REAL NOT NULL,
     tax_amount REAL NOT NULL,
-    payment_status TEXT CHECK(payment_status IN ('OVERDUE', 'PENDING', 'PAID')) NOT NULL DEFAULT 'PENDING',
+    payment_status TEXT CHECK(payment_status IN ('OVERDUE', 'PENDING', 'PAID', 'PARTIAL')) NOT NULL DEFAULT 'PENDING',
     promised_payment_date TEXT,
     notes TEXT,
+    gstin TEXT DEFAULT '27AABCS1429B1Z',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -108,6 +109,30 @@ async def update_transaction_status(invoice_number: str, status: str) -> bool:
         )
         await db.commit()
         return True
+
+async def insert_invoice_transaction(
+    entity_name: str,
+    phone_number: str,
+    invoice_number: str,
+    invoice_date: str,
+    amount_due: float,
+    tax_amount: float,
+    payment_status: str = "PENDING",
+    promised_payment_date: Optional[str] = None,
+    notes: Optional[str] = None,
+    gstin: str = "27AABCS1429B1Z"
+) -> int:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            """
+            INSERT OR REPLACE INTO ledger_transactions
+            (entity_name, phone_number, invoice_number, invoice_date, amount_due, tax_amount, payment_status, promised_payment_date, notes, gstin)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (entity_name, phone_number, invoice_number, invoice_date, amount_due, tax_amount, payment_status, promised_payment_date, notes, gstin)
+        )
+        await db.commit()
+        return cursor.lastrowid
 
 async def add_audit_log(
     thread_id: str,
