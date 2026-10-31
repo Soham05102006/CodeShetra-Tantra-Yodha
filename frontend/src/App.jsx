@@ -9,6 +9,7 @@ import AgentAuditTrailsCard from './components/AgentAuditTrailsCard';
 import ApprovalModal from './components/ApprovalModal';
 import LedgerAndInvoices from './components/LedgerAndInvoices';
 import VernacularCalls from './components/VernacularCalls';
+import ApprovalQueue from './components/ApprovalQueue';
 import { 
   PhoneCall, 
   CheckCircle2, 
@@ -270,9 +271,6 @@ export default function App() {
 
   const handleNavSelect = (navItem) => {
     setActiveNav(navItem);
-    if (navItem === 'Approval Queue') {
-      setIsModalOpen(true);
-    }
   };
 
   // Metrics calculation
@@ -356,6 +354,10 @@ export default function App() {
           ) : activeNav === 'Vernacular Calls' ? (
             <VernacularCalls 
               onTriggerVoice={(inv) => handleTriggerVoice(inv)}
+            />
+          ) : activeNav === 'Approval Queue' ? (
+            <ApprovalQueue 
+              onResolveApproval={handleResolveApproval}
             />
           ) : activeNav === 'Audit Logs' ? (
             <div className="space-y-5">

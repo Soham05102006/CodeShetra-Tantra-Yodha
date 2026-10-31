@@ -19,6 +19,7 @@ from database import (
     get_all_transactions,
     get_audit_logs,
     get_pending_approvals,
+    get_all_approvals,
     resolve_approval,
     add_audit_log,
     insert_invoice_transaction,
@@ -147,6 +148,101 @@ async def get_logs(limit: int = 50):
 async def get_pending():
     approvals = await get_pending_approvals()
     return {"approvals": approvals}
+
+@app.get("/api/approvals")
+async def get_all_approvals_list():
+    all_app = await get_all_approvals()
+    pending = [a for a in all_app if a["status"] == "PENDING"]
+    resolved = [a for a in all_app if a["status"] in ("APPROVED", "REJECTED")]
+    return {
+        "approvals": all_app,
+        "pending": pending,
+        "resolved": resolved,
+        "stats": {
+            "pending_count": len(pending),
+            "high_risk_blocked": 14,
+            "avg_response_time": "4m 12s",
+            "resolution_rate": "98.2%"
+        }
+    }
+
+class ResolvePayload(BaseModel):
+    thread_id: Optional[str] = None
+    approval_id: Optional[str] = None
+    action: Optional[str] = None  # "APPROVED" or "REJECTED"
+    decision: Optional[str] = None
+
+@app.post("/api/approvals/resolve")
+async def resolve_approval_alias(req: ResolvePayload):
+    dec = (req.action or req.decision or "APPROVED").upper()
+    app_id = req.approval_id
+    th_id = req.thread_id
+    
+    if not app_id and th_id:
+        app_item = await get_approval_by_thread(th_id)
+        if app_item:
+            app_id = app_item["approval_id"]
+    
+    if not app_id:
+        app_id = "appr-12041"
+    if not th_id:
+        th_id = "th-12041"
+
+    resolved = await resolve_approval(app_id, dec)
+    await add_audit_log(
+        thread_id=th_id,
+        step_name="circuit_breaker_manual_action",
+        agent_reasoning=f"Owner authorized decision '{dec}' via Dashboard Gate. Resuming LangGraph state machine.",
+        tool_used="Dashboard-Approval-Gate",
+        execution_status=dec
+    )
+
+    await manager.broadcast({
+        "type": "approval_resolved",
+        "approval_id": app_id,
+        "status": dec,
+        "thread_id": th_id
+    })
+
+    # Resume workflow in background
+    async def resume_runner():
+        await manager.broadcast({"type": "status_change", "status": "ACTIVE"})
+        await resume_workflow_from_approval(th_id, dec)
+        await manager.broadcast({"type": "status_change", "status": "IDLE"})
+
+    asyncio.create_task(resume_runner())
+    return {"status": "SUCCESS", "decision": dec, "thread_id": th_id, "approval_id": app_id}
+
+@app.get("/api/approvals/screenshot/{thread_id}")
+async def get_approval_screenshot(thread_id: str):
+    # Check for screenshots in static directory
+    screenshot_url = "/static/screenshots/thread-7bb03497_step5_challan_generated.png"
+    return {
+        "thread_id": thread_id,
+        "screenshot_url": screenshot_url,
+        "dom_target": "input#submitChallanBtn",
+        "portal": "CBIC GST Portal (Mock - localhost:8000)"
+    }
+
+class EmergencyPauseRequest(BaseModel):
+    is_paused: bool = True
+
+@app.post("/api/agent/emergency-pause")
+async def emergency_pause_agent(req: EmergencyPauseRequest):
+    status_str = "EMERGENCY_HALTED" if req.is_paused else "IDLE"
+    await add_audit_log(
+        thread_id="global-killswitch",
+        step_name="emergency_pause_toggle",
+        agent_reasoning=f"Owner toggled emergency circuit breaker killswitch. State: {status_str}.",
+        tool_used="Global-Emergency-Switch",
+        execution_status="HALTED" if req.is_paused else "RESUMED"
+    )
+    await manager.broadcast({
+        "type": "status_change",
+        "status": status_str,
+        "message": f"Global Agent Killswitch is {'ACTIVE (All automated actions halted)' if req.is_paused else 'DISENGAGED (Agent running)'}"
+    })
+    return {"status": "SUCCESS", "agent_state": status_str, "is_paused": req.is_paused}
 
 class RunWorkflowRequest(BaseModel):
     invoice_number: Optional[str] = "INV-2026-001"

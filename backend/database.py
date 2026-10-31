@@ -206,3 +206,10 @@ async def get_approval_by_thread(thread_id: str) -> Optional[Dict[str, Any]]:
         ) as cursor:
             row = await cursor.fetchone()
             return dict(row) if row else None
+
+async def get_all_approvals() -> List[Dict[str, Any]]:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute("SELECT * FROM approval_queue ORDER BY created_at DESC") as cursor:
+            rows = await cursor.fetchall()
+            return [dict(row) for row in rows]
