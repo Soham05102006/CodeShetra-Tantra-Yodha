@@ -204,20 +204,234 @@ def seed_database():
                 app_item
             )
 
-        # Seed realistic audit trail entries matching screenshot
+        # Seed realistic audit trail entries matching screenshot and specifications
         audit_seed = [
-            ("th-12041", "submit_gst_return_halt", "Submit GST Return (Requires manual signature check)", "Circuit-Breaker", "PAUSED", "2026-10-31 18:42:00"),
-            ("th-12040", "vendor_payout_complete", "Vendor payment to Jai Hind Traders (INR 82,600) (Approved by Owner via WhatsApp)", "Twilio-WhatsApp-Gate", "APPROVED", "2026-10-31 16:45:00"),
-            ("th-12039", "auto_close_ledger", "Auto-Close ledger reconciliation (approved by system)", "Reconciliation-Engine", "APPROVED", "2026-10-31 14:10:00"),
-            ("th-12038", "cancel_duplicate_invoice", "Cancelled incorrect invoice draft INV-026 (Duplicate detected, rejected by Owner)", "Twilio-WhatsApp-Gate", "REJECTED", "2026-10-31 11:32:00"),
-            ("init-thread-001", "system_initialization", "AI-01 initialized for Sharma Enterprises. Ledger loaded with 6 MSME transactions. Claimable ITC ₹24,800. Unresolved overdue ₹45,000.", "database_bootstrapper", "INITIALIZED", "2026-10-31 09:00:00")
+            (
+                "run-7482",
+                "Playwright Computer-Use",
+                "Automated GST Portal data entry & interactive button click",
+                "browser-use (Computer Use)",
+                "EXECUTING",
+                "/static/screenshots/demo-104451_step5_challan_generated.png",
+                json.dumps({
+                    "action": "click",
+                    "selector": "#gst-submit",
+                    "args": {"force": True},
+                    "target": "https://gst.gov.in/portal/filing",
+                    "timestamp": "2026-10-31T20:45:12.801Z"
+                }, indent=2),
+                json.dumps([
+                    "Parsed GSTR data input from thread (Pending Audit).",
+                    "Navigated to gst.gov.in mock filing interface.",
+                    "Identified #gst-submit button via visual anchor.",
+                    "Dispatched Playwright CLICK event on Submit (pending validation)."
+                ]),
+                "1.24s",
+                "0x8f2a71d49e10c4b1",
+                "2026-10-31 20:45:12"
+            ),
+            (
+                "run-7481",
+                "WhatsApp Circuit Breaker",
+                "Auto-escalated for owner signature; manual approval received",
+                "twilio-whatsapp (Approval Gate)",
+                "RESOLVED",
+                "/static/screenshots/demo-104451_step4_declaration_authorized.png",
+                json.dumps({
+                    "event": "whatsapp_approval_received",
+                    "from": "whatsapp:+919876543210",
+                    "decision": "APPROVED",
+                    "thread_id": "run-7481",
+                    "approval_id": "appr-12041",
+                    "timestamp": "2026-10-31T20:42:01.420Z"
+                }, indent=2),
+                json.dumps([
+                    "Reconciled invoice INV-025 with GST filing form. Total amount ₹42,500.",
+                    "Financial liability exceeds auto-filing threshold of ₹25,000.",
+                    "Triggered Circuit Breaker interruption to wait for owner WhatsApp signature.",
+                    "WhatsApp approval callback received from business owner (+91 98XXX XXXXX): 'APPROVE'."
+                ]),
+                "0.85s",
+                "0x3c99f1a28d447e12",
+                "2026-10-31 20:42:01"
+            ),
+            (
+                "run-7479",
+                "Hindi Voice Call (Vernacular Outbound)",
+                "Dialed +91 98XXX XXXXX. Secured ₹15,000 promise",
+                "vapi-voice (Vernacular Calls)",
+                "SUCCESS",
+                None,
+                json.dumps({
+                    "call_id": "vapi_call_849204",
+                    "customer": "Sharma Metal Works",
+                    "phone": "+919876543210",
+                    "language": "hi-IN",
+                    "duration": "1m 42s",
+                    "outcome": "PAYMENT_PROMISE",
+                    "promised_amount": 15000,
+                    "timestamp": "2026-10-31T18:31:04.112Z"
+                }, indent=2),
+                json.dumps([
+                    "Identified overdue invoice INV-025 (>25 days outstanding) for Sharma Metal Works.",
+                    "Injected balance (₹45,000) and payment history into Vapi Vernacular Voice engine.",
+                    "Dispatched conversational Hindi outbound phone call via Telephony Trunk.",
+                    "Debtor confirmed invoice receipt and committed ₹15,000 payment via UPI by 30 Oct."
+                ]),
+                "102.4s",
+                "0x5d10b77e8a912fa0",
+                "2026-10-31 18:31:04"
+            ),
+            (
+                "run-7475",
+                "Document Extraction (AI OCR)",
+                "Ingested INV-025 from WhatsApp, reconciled with bank statements",
+                "gemini-ocr (Document Ingest)",
+                "SUCCESS",
+                "/sample_invoice.jpg",
+                json.dumps({
+                    "document_type": "INVOICE",
+                    "invoice_number": "INV-025",
+                    "supplier": "Sharma Metal Works",
+                    "extracted_amount": 45000,
+                    "gstin": "27AABCS1429B1Z",
+                    "ocr_model": "gemini-2.0-flash",
+                    "confidence": 0.984,
+                    "timestamp": "2026-10-31T18:15:20.304Z"
+                }, indent=2),
+                json.dumps([
+                    "Ingested raw invoice image INV-025 received via WhatsApp webhook attachment.",
+                    "Gemini 2.0 Flash extracted: Supplier: Sharma Metal Works, Amount: ₹45,000, GSTIN: 27AABCS1429B1Z.",
+                    "Cross-referenced against HDFC bank statement credit log (UTR20261028).",
+                    "Reconciled ledger line item and marked status as OVERDUE for follow-up."
+                ]),
+                "2.10s",
+                "0x91ef74c10a42b100",
+                "2026-10-31 18:15:20"
+            ),
+            (
+                "th-12041",
+                "Circuit Breaker Gate",
+                "Submit GST Return (Requires manual signature check for ₹42,500)",
+                "twilio-whatsapp (Approval Gate)",
+                "PAUSED",
+                "/static/screenshots/demo-104451_step4_declaration_authorized.png",
+                json.dumps({
+                    "action": "CIRCUIT_BREAKER_INTERRUPT",
+                    "entity": "Sharma Metal Works",
+                    "tax_liability": 42500,
+                    "threshold": 25000,
+                    "status": "AWAITING_OWNER_SIGNATURE"
+                }, indent=2),
+                json.dumps([
+                    "Reconciliation finished for 24 monthly invoices.",
+                    "Generated GSTR-3B tax challan of ₹42,500.",
+                    "Circuit breaker activated due to financial high-risk category.",
+                    "Sent WhatsApp interactive approval card to Owner."
+                ]),
+                "0.42s",
+                "0x74a019bcae4129ef",
+                "2026-10-31 17:42:00"
+            ),
+            (
+                "th-12040",
+                "Vendor Payment Clearance",
+                "Vendor payment to Jai Hind Traders (INR 82,600) (Approved by Owner via WhatsApp)",
+                "twilio-whatsapp (Approval Gate)",
+                "SUCCESS",
+                None,
+                json.dumps({
+                    "vendor": "Jai Hind Traders",
+                    "amount": 82600.0,
+                    "channel": "HDFC Corporate Banking API",
+                    "auth_source": "WhatsApp HMAC-SHA256"
+                }, indent=2),
+                json.dumps([
+                    "Received invoice from Jai Hind Traders.",
+                    "Reconciled against Purchase Order #PO-9912.",
+                    "Dispatched WhatsApp prompt to owner for clearance.",
+                    "Approval verified and payment triggered via Bank API."
+                ]),
+                "4.18s",
+                "0x2289c84910ebf19a",
+                "2026-10-31 16:45:00"
+            ),
+            (
+                "th-12039",
+                "Ledger Auto-Close",
+                "Auto-Close ledger reconciliation (approved by system)",
+                "gemini-ocr (Document Ingest)",
+                "SUCCESS",
+                None,
+                json.dumps({
+                    "batch_id": "BATCH-OCT-CLOSE",
+                    "matched_count": 14,
+                    "variance": 0.0,
+                    "mode": "AUTONOMOUS"
+                }, indent=2),
+                json.dumps([
+                    "Batch processed 14 incoming bank credits.",
+                    "100% matched against active ledger invoices.",
+                    "Zero discrepancy flagged.",
+                    "Marked batch as RECONCILED."
+                ]),
+                "1.15s",
+                "0x4b789110caef182a",
+                "2026-10-31 14:10:00"
+            ),
+            (
+                "th-12038",
+                "Duplicate Invoice Rejection",
+                "Cancelled incorrect invoice draft INV-026 (Duplicate detected, rejected by Owner)",
+                "twilio-whatsapp (Approval Gate)",
+                "FAILED",
+                None,
+                json.dumps({
+                    "invoice_number": "INV-026",
+                    "error": "DUPLICATE_GSTIN_INVOICE_HASH",
+                    "decision": "REJECTED_BY_OWNER"
+                }, indent=2),
+                json.dumps([
+                    "Detected duplicate invoice number INV-026 with differing dates.",
+                    "Alerted business owner with anomaly score 0.94.",
+                    "Owner rejected reconciliation with reason 'duplicate billing'.",
+                    "Invoice voided in database."
+                ]),
+                "0.92s",
+                "0xaa019842c174fe29",
+                "2026-10-31 11:32:00"
+            ),
+            (
+                "init-thread-001",
+                "System Initialization",
+                "AI-01 initialized for Sharma Enterprises. Ledger loaded with 6 MSME transactions. Claimable ITC ₹24,800. Unresolved overdue ₹45,000.",
+                "browser-use (Computer Use)",
+                "SUCCESS",
+                None,
+                json.dumps({
+                    "system": "AI-01 Enterprise Core",
+                    "company": "Sharma Enterprises",
+                    "version": "1.0.0",
+                    "status": "HEALTHY"
+                }, indent=2),
+                json.dumps([
+                    "Loaded SQLite local operational database.",
+                    "Loaded LangGraph state machines and checkpoint tables.",
+                    "Verified Vapi Voice trunk connectivity.",
+                    "System online and monitoring."
+                ]),
+                "0.12s",
+                "0x110842caef918231",
+                "2026-10-31 09:00:00"
+            )
         ]
 
         for log in audit_seed:
             cursor.execute(
                 """
-                INSERT INTO agent_audit_log (thread_id, step_name, agent_reasoning, tool_used, execution_status, timestamp)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO agent_audit_log 
+                (thread_id, step_name, agent_reasoning, tool_used, execution_status, screenshot_path, payload, reasoning_steps, duration, hash, timestamp)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 log
             )

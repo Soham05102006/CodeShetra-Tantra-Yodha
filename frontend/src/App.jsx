@@ -10,6 +10,7 @@ import ApprovalModal from './components/ApprovalModal';
 import LedgerAndInvoices from './components/LedgerAndInvoices';
 import VernacularCalls from './components/VernacularCalls';
 import ApprovalQueue from './components/ApprovalQueue';
+import AuditLogs from './components/AuditLogs';
 import { 
   PhoneCall, 
   CheckCircle2, 
@@ -360,15 +361,7 @@ export default function App() {
               onResolveApproval={handleResolveApproval}
             />
           ) : activeNav === 'Audit Logs' ? (
-            <div className="space-y-5">
-              <div className="flex items-center justify-between pb-2 border-b border-[#1a2335]">
-                <div>
-                  <h2 className="text-base font-bold text-white">Full Telemetry & Execution Audit Logs</h2>
-                  <p className="text-xs text-slate-400">Verifiable trace logs, LangGraph checkpoints, and circuit breaker gates</p>
-                </div>
-              </div>
-              <AgentAuditTrailsCard logs={auditLogs} />
-            </div>
+            <AuditLogs />
           ) : (
             <>
               {/* Live Workflow Stepper Bar */}

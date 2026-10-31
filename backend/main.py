@@ -18,6 +18,9 @@ from database import (
     init_db,
     get_all_transactions,
     get_audit_logs,
+    get_audit_logs_by_thread,
+    get_audit_summary,
+    get_all_audit_logs_for_export,
     get_pending_approvals,
     get_all_approvals,
     resolve_approval,
@@ -644,6 +647,89 @@ async def export_ledger(format: str = "json"):
             })
         return Response(content=output.getvalue(), media_type="text/csv", headers={"Content-Disposition": "attachment; filename=ledger_export_tally.csv"})
     return JSONResponse(content={"transactions": transactions})
+
+# ==========================================
+# AUDIT LOGS & FORENSIC OBSERVABILITY APIS
+# ==========================================
+
+@app.get("/api/audit/logs")
+async def get_audit_trail_logs(
+    thread_id: Optional[str] = None,
+    status: Optional[str] = None,
+    tool: Optional[str] = None,
+    search: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0
+):
+    logs = await get_audit_logs(
+        limit=limit,
+        offset=offset,
+        thread_id=thread_id,
+        status=status,
+        tool=tool,
+        search=search
+    )
+    summary = await get_audit_summary()
+    return {
+        "status": "SUCCESS",
+        "total_count": len(logs),
+        "summary": summary,
+        "logs": logs
+    }
+
+@app.get("/api/audit/logs/{thread_id}")
+async def get_thread_audit_logs(thread_id: str):
+    logs = await get_audit_logs_by_thread(thread_id)
+    return {
+        "status": "SUCCESS",
+        "thread_id": thread_id,
+        "count": len(logs),
+        "logs": logs
+    }
+
+@app.get("/api/audit/screenshot/{filename:path}")
+async def get_audit_screenshot(filename: str):
+    from fastapi.responses import FileResponse
+    clean_name = os.path.basename(filename)
+    file_path = os.path.join(SCREENSHOTS_DIR, clean_name)
+    if os.path.exists(file_path):
+        return FileResponse(file_path, media_type="image/png")
+    
+    fallback_path = os.path.join(STATIC_DIR, clean_name)
+    if os.path.exists(fallback_path):
+        return FileResponse(fallback_path, media_type="image/png")
+        
+    raise HTTPException(status_code=404, detail=f"Screenshot {filename} not found")
+
+@app.get("/api/audit/export")
+async def export_audit_trail(format: str = "csv"):
+    logs = await get_all_audit_logs_for_export()
+    if format.lower() == "csv":
+        import csv
+        import io
+        output = io.StringIO()
+        fieldnames = ["log_id", "timestamp", "thread_id", "step_name", "tool_used", "execution_status", "agent_reasoning", "duration", "hash", "screenshot_path"]
+        writer = csv.DictWriter(output, fieldnames=fieldnames, extrasaction="ignore")
+        writer.writeheader()
+        for log in logs:
+            writer.writerow({
+                "log_id": log.get("log_id", ""),
+                "timestamp": log.get("timestamp", ""),
+                "thread_id": log.get("thread_id", ""),
+                "step_name": log.get("step_name", ""),
+                "tool_used": log.get("tool_used", ""),
+                "execution_status": log.get("execution_status", ""),
+                "agent_reasoning": log.get("agent_reasoning", ""),
+                "duration": log.get("duration", ""),
+                "hash": log.get("hash", ""),
+                "screenshot_path": log.get("screenshot_path", "")
+            })
+        return Response(
+            content=output.getvalue(),
+            media_type="text/csv",
+            headers={"Content-Disposition": "attachment; filename=agent_execution_audit_trail.csv"}
+        )
+    return JSONResponse(content={"status": "SUCCESS", "logs": logs})
 
 @app.post("/api/reset-demo")
 async def reset_demo_data():
