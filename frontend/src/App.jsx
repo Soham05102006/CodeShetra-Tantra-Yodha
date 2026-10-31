@@ -8,6 +8,7 @@ import LedgerTableCard from './components/LedgerTableCard';
 import AgentAuditTrailsCard from './components/AgentAuditTrailsCard';
 import ApprovalModal from './components/ApprovalModal';
 import LedgerAndInvoices from './components/LedgerAndInvoices';
+import VernacularCalls from './components/VernacularCalls';
 import { 
   PhoneCall, 
   CheckCircle2, 
@@ -351,6 +352,10 @@ export default function App() {
               onTriggerVoice={(inv) => handleTriggerVoice(inv)}
               onRunWorkflow={(inv) => handlePlay(inv)}
               onUploadSuccess={fetchData}
+            />
+          ) : activeNav === 'Vernacular Calls' ? (
+            <VernacularCalls 
+              onTriggerVoice={(inv) => handleTriggerVoice(inv)}
             />
           ) : activeNav === 'Audit Logs' ? (
             <div className="space-y-5">

@@ -254,6 +254,145 @@ async def trigger_call_alias(req: TriggerCallPayload):
     await manager.broadcast({"type": "voice_call", "data": res})
     return res
 
+@app.get("/api/voice/calls")
+async def get_voice_calls():
+    calls = [
+        {
+            "id": "call-001",
+            "contact_name": "Sharma Metal Works",
+            "phone_number": "+91 98765 43210",
+            "masked_phone": "+91 98XXX XXXXX",
+            "invoice_number": "INV-025",
+            "amount_due": 45000.0,
+            "language": "Hindi (Bundeli)",
+            "call_status": "CONNECTED",
+            "extracted_promise": "30 Oct (UPI)",
+            "promised_date": "2026-10-30",
+            "duration": "01:24",
+            "sentiment": "COOPERATIVE (85%)",
+            "sentiment_score": 0.85,
+            "sentiment_type": "cooperative",
+            "model_used": "Vapi.ai + Azure Hindi Swara",
+            "ai_transcript": "...बकाया है, आप कब तक भुगतान करेंगे? (your payment is pending, when can you pay?)",
+            "customer_transcript": "हाँ भैया, मैं कल शाम तक ₹15,000 UPI के ज़रिये भेज दूँगा पक्का। बाकी अगले हफ्ते।",
+            "extracted_entity": "Promised ₹15,000 via UPI on 30 Oct",
+            "system_action": "Updating Ledger with promise date."
+        },
+        {
+            "id": "call-002",
+            "contact_name": "Jai Hind Traders",
+            "phone_number": "+91 85220 19988",
+            "masked_phone": "+91 85XXX XXXXX",
+            "invoice_number": "INV-024",
+            "amount_due": 82600.0,
+            "language": "Marathi",
+            "call_status": "PROMISE SECURED",
+            "extracted_promise": "03 Nov (Bank)",
+            "promised_date": "2026-11-03",
+            "duration": "00:58",
+            "sentiment": "COOPERATIVE (92%)",
+            "sentiment_score": 0.92,
+            "sentiment_type": "cooperative",
+            "model_used": "Vapi.ai + Indic Marathi Whisper",
+            "ai_transcript": "नमस्कार पाटील साहेब, शर्मा एंटरप्रायझेस कडून ₹82,600 चे बिल बाकी आहे. (Greetings Mr. Patil, invoice of ₹82,600 is due.)",
+            "customer_transcript": "हो, सोमवारी ३ नोव्हेंबरला आरटीजीएस ने पाठवून देतो. (Yes, will send via RTGS on Monday, Nov 3rd.)",
+            "extracted_entity": "Promised ₹82,600 via Bank on 03 Nov",
+            "system_action": "Ledger reconciled. Status changed to PAID."
+        },
+        {
+            "id": "call-003",
+            "contact_name": "Karan Electricals",
+            "phone_number": "+91 91778 81122",
+            "masked_phone": "+91 91XXX XXXXX",
+            "invoice_number": "INV-022",
+            "amount_due": 35000.0,
+            "language": "Hindi",
+            "call_status": "CONNECTED",
+            "extracted_promise": "05 Nov (Cash)",
+            "promised_date": "2026-11-05",
+            "duration": "01:42",
+            "sentiment": "HESITANT (65%)",
+            "sentiment_score": 0.65,
+            "sentiment_type": "hesitant",
+            "model_used": "Vapi.ai + Azure Hindi Swara",
+            "ai_transcript": "नमस्ते करन जी, ₹35,000 का बकाया चालान पेंडिंग है। (Invoice of ₹35,000 is pending.)",
+            "customer_transcript": "मार्केट बहुत मंदा है। 5 नवंबर को आधा कैश दे पाऊंगा। (Market is slow. Can give half in cash by Nov 5th.)",
+            "extracted_entity": "Promised ₹15,000 via Cash on 05 Nov",
+            "system_action": "Status updated to PARTIAL in ledger."
+        },
+        {
+            "id": "call-004",
+            "contact_name": "Mahata Enterprises",
+            "phone_number": "+91 72441 29900",
+            "masked_phone": "+91 72XXX XXXXX",
+            "invoice_number": "INV-021",
+            "amount_due": 55900.0,
+            "language": "Gujarati",
+            "call_status": "RETRY SCHEDULED",
+            "extracted_promise": "--",
+            "promised_date": None,
+            "duration": "00:15",
+            "sentiment": "RESISTANT (40%)",
+            "sentiment_score": 0.40,
+            "sentiment_type": "resistant",
+            "model_used": "Vapi.ai + Indic Gujarati",
+            "ai_transcript": "નમસ્તે મહેતા સાહેબ, શર્મા એન્ટરપ્રાઇઝિસ માંથી કોલ છે. (Greetings Mr. Mahata, call from Sharma Enterprises.)",
+            "customer_transcript": "હું ડ્રાઇવિંગ કરી રહ્યો છું, પછી કોલ કરો. (I am driving, call back later.)",
+            "extracted_entity": "Scheduled retry in 2 hours",
+            "system_action": "Queued for automated vernacular callback."
+        },
+        {
+            "id": "call-005",
+            "contact_name": "Raj Logistics & Co.",
+            "phone_number": "+91 99112 24455",
+            "masked_phone": "+91 99XXX XXXXX",
+            "invoice_number": "INV-023",
+            "amount_due": 124000.0,
+            "language": "Punjabi",
+            "call_status": "NO ANSWER",
+            "extracted_promise": "--",
+            "promised_date": None,
+            "duration": "00:00",
+            "sentiment": "UNREACHABLE",
+            "sentiment_score": 0.0,
+            "sentiment_type": "unreachable",
+            "model_used": "Vapi.ai + Indic Punjabi",
+            "ai_transcript": "Outbound ringing... (No answer / Subscriber busy)",
+            "customer_transcript": "[No Response / Unreachable]",
+            "extracted_entity": "Unreachable via voice call",
+            "system_action": "Triggered Twilio WhatsApp sandbox nudge."
+        }
+    ]
+    return {"calls": calls, "total": len(calls)}
+
+@app.post("/api/webhooks/voice-callback")
+async def voice_callback(payload: Dict[str, Any]):
+    message_type = payload.get("message", {}).get("type", "end-of-call-report")
+    call_data = payload.get("message", {}).get("call", {})
+    transcript = payload.get("message", {}).get("transcript", "")
+    customer = call_data.get("customer", {})
+    phone = customer.get("number", "")
+    
+    await add_audit_log(
+        thread_id="vapi-callback",
+        step_name="vapi_voice_completed",
+        agent_reasoning=f"Received Vapi webhook callback for {phone}. Analyzing transcript via Gemini 2.0.",
+        tool_used="Vapi-Webhook-Listener",
+        execution_status="COMPLETED"
+    )
+    
+    analysis = await voice_dispatcher.analyze_transcript(transcript, "INV-2026-001")
+    await manager.broadcast({
+        "type": "voice_call",
+        "data": {
+            "status": "COMPLETED",
+            "phone": phone,
+            "transcript": transcript,
+            "analysis": analysis
+        }
+    })
+    return {"status": "ACKNOWLEDGED", "analysis": analysis}
+
 class InvoiceUploadPayload(BaseModel):
     entity_name: Optional[str] = "Sharma Metal Works"
     invoice_number: Optional[str] = "INV-025"

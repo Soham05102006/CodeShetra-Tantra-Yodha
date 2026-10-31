@@ -11,6 +11,9 @@ import httpx
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 from database import update_transaction_promise, add_audit_log
+from dotenv import load_dotenv
+
+load_dotenv()
 
 VAPI_API_KEY = os.getenv("VAPI_API_KEY", "")
 VAPI_PHONE_NUMBER_ID = os.getenv("VAPI_PHONE_NUMBER_ID", "")
