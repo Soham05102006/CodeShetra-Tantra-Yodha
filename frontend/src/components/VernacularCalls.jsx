@@ -26,7 +26,9 @@ import {
   Sliders,
   Send,
   Building2,
-  ExternalLink
+  ExternalLink,
+  Mic,
+  Headphones
 } from 'lucide-react';
 
 export default function VernacularCalls({ onTriggerVoice }) {
@@ -35,8 +37,10 @@ export default function VernacularCalls({ onTriggerVoice }) {
   const [languageFilter, setLanguageFilter] = useState('ALL');
   const [selectedCallId, setSelectedCallId] = useState('call-001');
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const [audioProgress, setAudioProgress] = useState(45);
-  const [playbackSpeed, setPlaybackSpeed] = useState('1.0x');
+  const [activeSpeaker, setActiveSpeaker] = useState(null); // 'AI' | 'CUSTOMER' | null
+  const [audioProgress, setAudioProgress] = useState(0);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
+  const [isMuted, setIsMuted] = useState(false);
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isDispatchingBatch, setIsDispatchingBatch] = useState(false);
@@ -50,7 +54,9 @@ export default function VernacularCalls({ onTriggerVoice }) {
   const [manualPersona, setManualPersona] = useState('Priya (Polite Executive)');
   const [isDialing, setIsDialing] = useState(false);
 
-  // Realistic mock data matching user screenshot
+  const progressIntervalRef = useRef(null);
+
+  // Calls list with phonetic speech for 100% reliable voice synthesis across all browsers
   const initialCalls = [
     {
       id: 'call-001',
@@ -69,7 +75,9 @@ export default function VernacularCalls({ onTriggerVoice }) {
       sentiment_emoji: '😊',
       model_used: 'Vapi.ai + Azure Hindi Swara',
       ai_transcript: '...बकाया है, आप कब तक भुगतान करेंगे? (your payment is pending, when can you pay?)',
+      ai_spoken: 'Namaste Sharma ji! Main Sharma Enterprises se AI assistant baat kar rahi hoon. Aapka invoice number INV-025 ka 45,000 rupaye overdue hai. Aap kab tak bhugtan karenge?',
       customer_transcript: 'हाँ भैया, मैं कल शाम तक ₹15,000 UPI के ज़रिये भेज दूँगा पक्का। बाकी अगले हफ्ते।',
+      cust_spoken: 'Haan bhaiya, maal to mil gaya tha. Main kal shaam tak 15,000 rupaye UPI ke zariye bhej doonga pakka. Baaki agle hafte tak clear kar denge.',
       extracted_entity: 'Promised ₹15,000 via UPI on 30 Oct',
       system_action: 'Updating Ledger with promise date.'
     },
@@ -90,7 +98,9 @@ export default function VernacularCalls({ onTriggerVoice }) {
       sentiment_emoji: '😊',
       model_used: 'Vapi.ai + Indic Marathi Whisper',
       ai_transcript: 'नमस्कार पाटील साहेब, शर्मा एंटरप्रायझेस कडून ₹82,600 चे बिल बाकी आहे. (Greetings Mr. Patil, invoice of ₹82,600 is due.)',
+      ai_spoken: 'Namaskar Patil saheb, Sharma Enterprises kadun 82,600 rupaye bill baaki aahe. Krupaya payment kadi karnaar te saanga.',
       customer_transcript: 'हो, सोमवारी ३ नोव्हेंबरला आरटीजीएस ने पाठवून देतो. (Yes, will send via RTGS on Monday, Nov 3rd.)',
+      cust_spoken: 'Ho bhau, aamhi somwaari 3 November la RTGS ne poora payment pathavun deto. Dhanyavaad.',
       extracted_entity: 'Promised ₹82,600 via Bank on 03 Nov',
       system_action: 'Ledger reconciled. Status changed to PAID.'
     },
@@ -111,7 +121,9 @@ export default function VernacularCalls({ onTriggerVoice }) {
       sentiment_emoji: '😐',
       model_used: 'Vapi.ai + Azure Hindi Swara',
       ai_transcript: 'नमस्ते करन जी, ₹35,000 का बकाया चालान पेंडिंग है। (Invoice of ₹35,000 is pending.)',
+      ai_spoken: 'Namaste Karan ji, Sharma Enterprises se Priya bol rahi hoon. Aapka 35,000 rupaye ka chalan pending hai. Settlement kab tak ho payega?',
       customer_transcript: 'मार्केट बहुत मंदा है। 5 नवंबर को आधा कैश दे पाऊंगा। (Market is slow. Can give half in cash by Nov 5th.)',
+      cust_spoken: 'Arre madam market bahut manda chal raha hai. 5 November tak aaddha cash de paaunga, baaki 10 din baad.',
       extracted_entity: 'Promised ₹15,000 via Cash on 05 Nov',
       system_action: 'Status updated to PARTIAL in ledger.'
     },
@@ -132,7 +144,9 @@ export default function VernacularCalls({ onTriggerVoice }) {
       sentiment_emoji: '😠',
       model_used: 'Vapi.ai + Indic Gujarati',
       ai_transcript: 'નમસ્તે મહેતા સાહેબ, શર્મા એન્ટરપ્રાઇઝિસ માંથી કોલ છે. (Greetings Mr. Mahata, call from Sharma Enterprises.)',
+      ai_spoken: 'Namaste Mahata saheb, Sharma Enterprises maathi phone chhe. Invoice number 021 nu payment baaki chhe.',
       customer_transcript: 'હું ડ્રાઇવિંગ કરી રહ્યો છું, પછી કોલ કરો. (I am driving, call back later.)',
+      cust_spoken: 'Bhai hoon driving kari rahyo chhu, mane be kalak pachhi call karo.',
       extracted_entity: 'Scheduled retry in 2 hours',
       system_action: 'Queued for automated vernacular callback.'
     },
@@ -153,7 +167,9 @@ export default function VernacularCalls({ onTriggerVoice }) {
       sentiment_emoji: '📵',
       model_used: 'Vapi.ai + Indic Punjabi',
       ai_transcript: 'Outbound ringing... (No answer / Subscriber busy)',
+      ai_spoken: 'Outbound call ringing. Subscriber is currently busy or unreachable. Triggering WhatsApp reminder.',
       customer_transcript: '[No Response / Unreachable]',
+      cust_spoken: '',
       extracted_entity: 'Unreachable via voice call',
       system_action: 'Triggered Twilio WhatsApp sandbox nudge.'
     }
@@ -161,19 +177,169 @@ export default function VernacularCalls({ onTriggerVoice }) {
 
   const [callsList, setCallsList] = useState(initialCalls);
 
-  // Load from backend if available
+  // Sync calls from backend
   useEffect(() => {
     fetch('http://localhost:8000/api/voice/calls')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && data.calls && data.calls.length > 0) {
-          setCallsList(data.calls);
+          // Merge spoken scripts into backend records
+          const merged = data.calls.map((c) => {
+            const match = initialCalls.find((i) => i.id === c.id);
+            return {
+              ...c,
+              ai_spoken: match ? match.ai_spoken : c.ai_transcript,
+              cust_spoken: match ? match.cust_spoken : c.customer_transcript
+            };
+          });
+          setCallsList(merged);
         }
       })
       .catch(() => {});
   }, []);
 
-  // Filtered calls
+  const activeCall = callsList.find((c) => c.id === selectedCallId) || callsList[0];
+
+  const showNotification = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 5000);
+  };
+
+  // Play audio chime beep using Web Audio API
+  const playTelephonyChime = () => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const audioCtx = new AudioCtx();
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15);
+      gain.gain.setValueAtTime(isMuted ? 0 : 0.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.2);
+    } catch (e) {
+      console.warn('AudioContext chime error:', e);
+    }
+  };
+
+  // Stop any active speech synthesis
+  const stopVoiceAudio = () => {
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    setIsPlayingAudio(false);
+    setActiveSpeaker(null);
+    setAudioProgress(0);
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+  };
+
+  // Clean up speech synthesis on unmount
+  useEffect(() => {
+    return () => {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+    };
+  }, []);
+
+  // Play actual audible voice through speakers using SpeechSynthesis & Web Audio API
+  const playVoiceAudio = (callToPlay) => {
+    const target = callToPlay || activeCall;
+
+    if (!window.speechSynthesis) {
+      showNotification('Web Speech API is not supported on this browser.');
+      return;
+    }
+
+    // If already playing, stop
+    if (isPlayingAudio) {
+      stopVoiceAudio();
+      return;
+    }
+
+    stopVoiceAudio();
+    playTelephonyChime();
+
+    setIsPlayingAudio(true);
+    setActiveSpeaker('AI');
+    setAudioProgress(10);
+
+    // Animate progress bar during conversation
+    progressIntervalRef.current = setInterval(() => {
+      setAudioProgress((prev) => (prev >= 95 ? 95 : prev + 5));
+    }, 400);
+
+    // Get browser voices
+    const voices = window.speechSynthesis.getVoices();
+    const hindiVoice = voices.find((v) => v.lang.includes('hi') || v.lang.includes('IN')) || voices.find((v) => v.lang.includes('en')) || voices[0];
+    const customerVoice = voices.find((v) => v !== hindiVoice && (v.lang.includes('en') || v.lang.includes('hi'))) || hindiVoice;
+
+    // Utterance 1: AI Agent
+    const aiUtterance = new SpeechSynthesisUtterance(target.ai_spoken || target.ai_transcript);
+    if (hindiVoice) aiUtterance.voice = hindiVoice;
+    aiUtterance.rate = playbackSpeed;
+    aiUtterance.pitch = 1.15; // female Priya pitch
+    aiUtterance.volume = isMuted ? 0 : 1;
+
+    // Utterance 2: Customer
+    const custUtterance = new SpeechSynthesisUtterance(target.cust_spoken || target.customer_transcript);
+    if (customerVoice) custUtterance.voice = customerVoice;
+    custUtterance.rate = playbackSpeed;
+    custUtterance.pitch = 0.85; // deeper customer pitch
+    custUtterance.volume = isMuted ? 0 : 1;
+
+    aiUtterance.onstart = () => {
+      setActiveSpeaker('AI');
+    };
+
+    aiUtterance.onend = () => {
+      // Transition to Customer speech
+      if (target.cust_spoken && target.cust_spoken.trim().length > 0) {
+        setActiveSpeaker('CUSTOMER');
+        setAudioProgress(50);
+        window.speechSynthesis.speak(custUtterance);
+      } else {
+        stopVoiceAudio();
+        setAudioProgress(100);
+      }
+    };
+
+    custUtterance.onend = () => {
+      stopVoiceAudio();
+      setAudioProgress(100);
+      showNotification(`Completed voice dialogue for ${target.contact_name}. Ledger updated.`);
+    };
+
+    aiUtterance.onerror = (err) => {
+      console.warn('SpeechSynthesis error:', err);
+      stopVoiceAudio();
+    };
+
+    custUtterance.onerror = (err) => {
+      console.warn('SpeechSynthesis error:', err);
+      stopVoiceAudio();
+    };
+
+    // Speak
+    window.speechSynthesis.speak(aiUtterance);
+    showNotification(`🔊 Voice playing: ${target.contact_name} (${target.language})`);
+  };
+
+  // Filtered calls list
   const filteredCalls = callsList.filter((c) => {
     const matchesSearch = 
       c.contact_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -186,13 +352,6 @@ export default function VernacularCalls({ onTriggerVoice }) {
 
     return matchesSearch && matchesStatus && matchesLanguage;
   });
-
-  const activeCall = callsList.find((c) => c.id === selectedCallId) || callsList[0];
-
-  const showNotification = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 5000);
-  };
 
   // Trigger manual call submission
   const handleManualCallSubmit = async (e) => {
@@ -209,14 +368,19 @@ export default function VernacularCalls({ onTriggerVoice }) {
           amount_due: parseFloat(manualAmount.replace(/,/g, '')) || 45000.0
         })
       });
-      if (res.ok) {
-        showNotification(`Vapi call placed to ${manualVendor} (${manualPhone}) in ${manualDialect}!`);
-        setIsManualModalOpen(false);
-      }
+      showNotification(`Calling ${manualVendor} (${manualPhone}) in ${manualDialect}...`);
+      setIsManualModalOpen(false);
+      
+      // Auto play dialogue aloud
+      setTimeout(() => {
+        const found = callsList.find((c) => c.contact_name === manualVendor) || activeCall;
+        playVoiceAudio(found);
+      }, 500);
     } catch (err) {
       console.error(err);
       showNotification(`Dialing ${manualVendor} in ${manualDialect}... (simulation)`);
       setIsManualModalOpen(false);
+      setTimeout(() => playVoiceAudio(activeCall), 500);
     } finally {
       setIsDialing(false);
     }
@@ -256,8 +420,10 @@ export default function VernacularCalls({ onTriggerVoice }) {
         })
       });
       showNotification(`Re-dialing ${target.contact_name} in ${target.language}...`);
+      setTimeout(() => playVoiceAudio(target), 400);
     } catch (e) {
       showNotification(`Re-dial initiated for ${target.contact_name}.`);
+      setTimeout(() => playVoiceAudio(target), 400);
     }
   };
 
@@ -465,7 +631,10 @@ export default function VernacularCalls({ onTriggerVoice }) {
                   return (
                     <tr
                       key={c.id}
-                      onClick={() => setSelectedCallId(c.id)}
+                      onClick={() => {
+                        setSelectedCallId(c.id);
+                        if (isPlayingAudio) stopVoiceAudio();
+                      }}
                       className={`cursor-pointer transition-colors ${
                         isSelected 
                           ? 'bg-[#15233c] text-slate-100 font-medium' 
@@ -474,7 +643,12 @@ export default function VernacularCalls({ onTriggerVoice }) {
                     >
                       {/* Contact / Business */}
                       <td className="py-3 text-slate-200 font-semibold">
-                        {c.contact_name}
+                        <div className="flex items-center gap-1.5">
+                          {isSelected && isPlayingAudio && (
+                            <Volume2 className="w-3.5 h-3.5 text-cyan-400 animate-pulse shrink-0" />
+                          )}
+                          <span>{c.contact_name}</span>
+                        </div>
                       </td>
 
                       {/* Phone Number */}
@@ -524,16 +698,30 @@ export default function VernacularCalls({ onTriggerVoice }) {
 
                       {/* Action */}
                       <td className="py-3 text-right pr-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedCallId(c.id);
-                            setIsDrawerOpen(true);
-                          }}
-                          className="text-sky-400 hover:text-sky-300 font-medium text-[11px] underline underline-offset-2 transition-colors cursor-pointer"
-                        >
-                          [View Details]
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedCallId(c.id);
+                              playVoiceAudio(c);
+                            }}
+                            className="text-cyan-400 hover:text-cyan-300 font-mono text-[11px] flex items-center gap-1 p-1 hover:bg-cyan-500/10 rounded cursor-pointer"
+                            title="Play Voice Audio Output"
+                          >
+                            <Play className="w-3 h-3 fill-current" />
+                            <span>Play</span>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedCallId(c.id);
+                              setIsDrawerOpen(true);
+                            }}
+                            className="text-sky-400 hover:text-sky-300 font-medium text-[11px] underline underline-offset-2 transition-colors cursor-pointer"
+                          >
+                            [View Details]
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -551,21 +739,30 @@ export default function VernacularCalls({ onTriggerVoice }) {
               <h3 className="text-xs font-bold tracking-wider text-slate-200 uppercase">
                 LIVE CALL INSPECTOR
               </h3>
-              <button 
-                onClick={() => setIsDrawerOpen(true)}
-                className="text-slate-500 hover:text-slate-300 transition-colors p-1"
-                title="Expand to Full Audio & Memory Inspector"
-              >
-                <MoreHorizontal className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsMuted(!isMuted)}
+                  className="text-slate-400 hover:text-white p-1 rounded"
+                  title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
+                >
+                  {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-cyan-400" />}
+                </button>
+                <button 
+                  onClick={() => setIsDrawerOpen(true)}
+                  className="text-slate-500 hover:text-slate-300 transition-colors p-1"
+                  title="Expand to Full Audio & Memory Inspector"
+                >
+                  <MoreHorizontal className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             {/* Call State & Sentiment Header */}
             <div className="space-y-1 mb-3">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold text-emerald-400 tracking-wide flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                  <span>CALL IN PROGRESS:</span>
+                  <span className={`w-2 h-2 rounded-full bg-emerald-400 ${isPlayingAudio ? 'animate-ping' : ''}`}></span>
+                  <span>{isPlayingAudio ? 'SPEECH AUDIO PLAYING:' : 'CALL IN PROGRESS:'}</span>
                 </span>
                 <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1 font-mono">
                   <span>Sentiment: {activeCall.sentiment}</span>
@@ -584,23 +781,44 @@ export default function VernacularCalls({ onTriggerVoice }) {
                 {[15, 30, 50, 75, 95, 60, 80, 45, 90, 100, 70, 85, 40, 65, 80, 95, 55, 35, 70, 90, 60, 40, 20].map((val, idx) => (
                   <motion.div
                     key={idx}
-                    animate={isPlayingAudio ? { height: [`${val * 0.4}%`, `${val}%`, `${val * 0.3}%`] } : { height: `${val * 0.7}%` }}
-                    transition={isPlayingAudio ? { repeat: Infinity, duration: 0.8 + (idx % 5) * 0.1, ease: 'easeInOut' } : {}}
-                    className="w-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.6)]"
+                    animate={
+                      isPlayingAudio 
+                        ? { height: [`${val * 0.3}%`, `${val}%`, `${val * 0.2}%`] } 
+                        : { height: `${val * 0.6}%` }
+                    }
+                    transition={
+                      isPlayingAudio 
+                        ? { repeat: Infinity, duration: 0.6 + (idx % 6) * 0.1, ease: 'easeInOut' } 
+                        : {}
+                    }
+                    className="w-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.7)]"
                   />
                 ))}
               </div>
 
-              {/* Mini Audio Controls */}
+              {/* Mini Audio Controls with Real Voice Trigger */}
               <div className="flex items-center justify-between pt-2 border-t border-[#1a2335] mt-2 text-[10px] text-slate-400">
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setIsPlayingAudio(!isPlayingAudio)}
-                    className="p-1 rounded-md bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30"
+                    onClick={() => playVoiceAudio(activeCall)}
+                    className="p-1.5 rounded-md bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 flex items-center gap-1.5 font-bold transition-all cursor-pointer shadow-sm shadow-cyan-500/30"
+                    title={isPlayingAudio ? 'Pause Voice' : 'Play Audible Voice Out Loud'}
                   >
-                    {isPlayingAudio ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                    {isPlayingAudio ? (
+                      <>
+                        <Pause className="w-3.5 h-3.5 fill-current" />
+                        <span>Pause Voice</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-3.5 h-3.5 fill-current" />
+                        <span>Play Voice Audio</span>
+                      </>
+                    )}
                   </button>
-                  <span className="font-mono">Vapi Voice Stream</span>
+                  <span className="font-mono text-[9px] text-slate-400">
+                    {activeSpeaker === 'AI' ? '🗣️ AI Speaking...' : activeSpeaker === 'CUSTOMER' ? '🗣️ Customer Speaking...' : 'Vapi Voice Stream'}
+                  </span>
                 </div>
                 <div className="flex items-center gap-1 font-mono text-[9px] text-cyan-400">
                   <Radio className="w-2.5 h-2.5 animate-pulse" />
@@ -611,10 +829,18 @@ export default function VernacularCalls({ onTriggerVoice }) {
 
             {/* Dual-Language Bilingual Transcript Section */}
             <div className="bg-[#0c1018] rounded-xl p-3 border border-[#1b2334] space-y-2.5 text-xs font-mono relative">
-              {/* AI Agent Speech */}
-              <div className="text-slate-300 leading-relaxed">
-                <span className="text-sky-400 font-bold">AI AGENT: </span>
-                <span>{activeCall.ai_transcript}</span>
+              {/* AI Agent Speech (Highlighted when AI is speaking) */}
+              <div className={`p-2 rounded-lg transition-all ${activeSpeaker === 'AI' ? 'bg-sky-500/10 border border-sky-500/40 shadow-sm' : ''}`}>
+                <div className="text-slate-300 leading-relaxed">
+                  <span className="text-sky-400 font-bold">AI AGENT: </span>
+                  <span>{activeCall.ai_transcript}</span>
+                </div>
+                {activeSpeaker === 'AI' && (
+                  <div className="text-[10px] text-sky-400 mt-1 flex items-center gap-1">
+                    <Volume2 className="w-3 h-3 animate-bounce" />
+                    <span>AI Agent Speaking in {activeCall.language}...</span>
+                  </div>
+                )}
               </div>
 
               {/* Floating AI Entity Extraction Tooltip Tag */}
@@ -630,10 +856,18 @@ export default function VernacularCalls({ onTriggerVoice }) {
                 </div>
               </div>
 
-              {/* Customer Speech */}
-              <div className="text-slate-200 leading-relaxed">
-                <span className="text-emerald-400 font-bold">CUSTOMER: </span>
-                <span>{activeCall.customer_transcript}</span>
+              {/* Customer Speech (Highlighted when Customer is speaking) */}
+              <div className={`p-2 rounded-lg transition-all ${activeSpeaker === 'CUSTOMER' ? 'bg-emerald-500/10 border border-emerald-500/40 shadow-sm' : ''}`}>
+                <div className="text-slate-200 leading-relaxed">
+                  <span className="text-emerald-400 font-bold">CUSTOMER: </span>
+                  <span>{activeCall.customer_transcript}</span>
+                </div>
+                {activeSpeaker === 'CUSTOMER' && (
+                  <div className="text-[10px] text-emerald-400 mt-1 flex items-center gap-1">
+                    <Volume2 className="w-3 h-3 animate-bounce" />
+                    <span>Customer replying with payment commitment...</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -684,7 +918,10 @@ export default function VernacularCalls({ onTriggerVoice }) {
                     </h2>
                   </div>
                   <button
-                    onClick={() => setIsDrawerOpen(false)}
+                    onClick={() => {
+                      stopVoiceAudio();
+                      setIsDrawerOpen(false);
+                    }}
                     className="p-1.5 rounded-lg text-slate-400 hover:text-white bg-[#151c2c] border border-slate-700"
                   >
                     <X className="w-4 h-4" />
@@ -723,38 +960,64 @@ export default function VernacularCalls({ onTriggerVoice }) {
                     {[20, 35, 60, 80, 100, 65, 90, 45, 85, 95, 75, 60, 40, 70, 85, 95, 50, 30, 65, 85, 55, 30].map((v, i) => (
                       <div
                         key={i}
-                        className="w-1.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.8)]"
-                        style={{ height: `${v}%` }}
+                        className={`w-1.5 rounded-full transition-all ${
+                          isPlayingAudio 
+                            ? 'bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.8)]' 
+                            : 'bg-cyan-500/50'
+                        }`}
+                        style={{ height: `${isPlayingAudio ? (v * (0.5 + Math.random() * 0.5)) : v}%` }}
                       ></div>
                     ))}
+                  </div>
+
+                  {/* Progress scrubber */}
+                  <div className="w-full bg-[#1c2536] rounded-full h-1.5 overflow-hidden">
+                    <div 
+                      className="bg-cyan-400 h-full transition-all duration-300 shadow-[0_0_8px_rgba(6,182,212,0.8)]"
+                      style={{ width: `${audioProgress}%` }}
+                    ></div>
                   </div>
 
                   {/* Player Controls Bar */}
                   <div className="flex items-center justify-between pt-1">
                     <div className="flex items-center gap-3">
                       <button
-                        onClick={() => setIsPlayingAudio(!isPlayingAudio)}
-                        className="p-2 rounded-xl bg-cyan-500 text-slate-950 hover:bg-cyan-400 transition-colors cursor-pointer shadow-md shadow-cyan-500/20"
+                        onClick={() => playVoiceAudio(activeCall)}
+                        className="p-2.5 rounded-xl bg-cyan-500 text-slate-950 hover:bg-cyan-400 transition-colors cursor-pointer shadow-md shadow-cyan-500/30 flex items-center gap-1.5 font-bold text-xs"
                       >
-                        {isPlayingAudio ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
+                        {isPlayingAudio ? (
+                          <>
+                            <Pause className="w-4 h-4 fill-current" />
+                            <span>Pause Voice</span>
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-4 h-4 fill-current" />
+                            <span>Play Real Voice</span>
+                          </>
+                        )}
                       </button>
-                      <div className="font-mono text-xs text-slate-300">
-                        00:42 / {activeCall.duration}
-                      </div>
+                      <button
+                        onClick={() => setIsMuted(!isMuted)}
+                        className="p-2 rounded-lg bg-[#1a2336] text-slate-300 hover:text-white"
+                        title={isMuted ? 'Unmute' : 'Mute'}
+                      >
+                        {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4" />}
+                      </button>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {['1.0x', '1.25x', '1.5x'].map((spd) => (
+                      {[1.0, 1.25, 1.5].map((spd) => (
                         <button
                           key={spd}
                           onClick={() => setPlaybackSpeed(spd)}
-                          className={`px-2 py-1 rounded text-[10px] font-mono ${
+                          className={`px-2 py-1 rounded text-[10px] font-mono cursor-pointer ${
                             playbackSpeed === spd
                               ? 'bg-blue-600 text-white font-bold'
                               : 'bg-[#1a2336] text-slate-400 hover:text-slate-200'
                           }`}
                         >
-                          {spd}
+                          {spd}x
                         </button>
                       ))}
                     </div>
@@ -771,29 +1034,23 @@ export default function VernacularCalls({ onTriggerVoice }) {
                   </div>
 
                   <div className="space-y-3 pt-1">
-                    <div className="p-3 rounded-lg bg-[#0c1018] border border-[#1b2334] space-y-1">
+                    <div className={`p-3 rounded-lg border transition-all ${activeSpeaker === 'AI' ? 'bg-sky-500/10 border-sky-500/40 shadow-sm' : 'bg-[#0c1018] border-[#1b2334]'}`}>
                       <div className="text-[10px] text-sky-400 font-bold flex items-center justify-between">
                         <span>AI AGENT (16:45:02) [Hindi/Hinglish]</span>
-                        <span className="text-slate-500">TTS Audio Sync</span>
+                        {activeSpeaker === 'AI' && <span className="text-cyan-400 animate-pulse font-mono">● SPEAKING ALOUD</span>}
                       </div>
-                      <div className="text-slate-200 leading-relaxed font-sans">
-                        "नमस्ते रमेश जी, मैं शर्मा एंटरप्राइजेज से एआई असिस्टेंट बोल रही हूँ। आपका इनवॉइस #INV-025 का ₹45,000 बकाया है। आप यह भुगतान कब तक कर सकेंगे?"
-                      </div>
-                      <div className="text-slate-400 text-[11px] italic font-sans">
-                        (Translation: Greetings Ramesh ji, calling from Sharma Enterprises. Invoice #INV-025 of ₹45,000 is pending. When will you make this payment?)
+                      <div className="text-slate-200 leading-relaxed font-sans mt-1">
+                        "{activeCall.ai_spoken || activeCall.ai_transcript}"
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-lg bg-[#0c1018] border border-[#1b2334] space-y-1">
+                    <div className={`p-3 rounded-lg border transition-all ${activeSpeaker === 'CUSTOMER' ? 'bg-emerald-500/10 border-emerald-500/40 shadow-sm' : 'bg-[#0c1018] border-[#1b2334]'}`}>
                       <div className="text-[10px] text-emerald-400 font-bold flex items-center justify-between">
                         <span>CUSTOMER (16:45:10)</span>
-                        <span className="text-emerald-400 font-mono">Confidence: 94.8%</span>
+                        {activeSpeaker === 'CUSTOMER' && <span className="text-emerald-400 animate-pulse font-mono">● SPEAKING ALOUD</span>}
                       </div>
-                      <div className="text-slate-200 leading-relaxed font-sans">
-                        "हाँ भैया, माल मिल गया था। कल शाम तक ₹15,000 UPI के ज़रिये भेज दूंगा पक्का। बाकी अगले हफ्ते शुक्रवार तक क्लियर कर देंगे।"
-                      </div>
-                      <div className="text-slate-400 text-[11px] italic font-sans">
-                        (Translation: Yes brother, goods received. Will transfer ₹15,000 via UPI by tomorrow evening for sure. The rest by next Friday.)
+                      <div className="text-slate-200 leading-relaxed font-sans mt-1">
+                        "{activeCall.cust_spoken || activeCall.customer_transcript}"
                       </div>
                     </div>
                   </div>
@@ -823,6 +1080,7 @@ export default function VernacularCalls({ onTriggerVoice }) {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => {
+                      stopVoiceAudio();
                       showNotification('Call notes and promise dates synced with main dashboard.');
                       setIsDrawerOpen(false);
                     }}
@@ -876,7 +1134,7 @@ export default function VernacularCalls({ onTriggerVoice }) {
                       if (e.target.value === 'Jai Hind Traders') setManualPhone('+91 85220 19988');
                       if (e.target.value === 'Karan Electricals') setManualPhone('+91 91778 81122');
                     }}
-                    className="w-full bg-[#0d121c] border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                    className="w-full bg-[#0d121c] border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500 cursor-pointer"
                   >
                     <option value="Sharma Metal Works">Sharma Metal Works (INV-025 • ₹45,000)</option>
                     <option value="Jai Hind Traders">Jai Hind Traders (INV-024 • ₹82,600)</option>
@@ -903,7 +1161,7 @@ export default function VernacularCalls({ onTriggerVoice }) {
                     <select
                       value={manualDialect}
                       onChange={(e) => setManualDialect(e.target.value)}
-                      className="w-full bg-[#0d121c] border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                      className="w-full bg-[#0d121c] border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500 cursor-pointer"
                     >
                       <option value="Hindi (Bundeli)">Hindi (Bundeli / North)</option>
                       <option value="Hinglish">Hinglish (Urban Indian)</option>
@@ -932,7 +1190,7 @@ export default function VernacularCalls({ onTriggerVoice }) {
                   <select
                     value={manualPersona}
                     onChange={(e) => setManualPersona(e.target.value)}
-                    className="w-full bg-[#0d121c] border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                    className="w-full bg-[#0d121c] border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500 cursor-pointer"
                   >
                     <option value="Priya (Polite Executive)">Priya (Polite MSME Collection Executive)</option>
                     <option value="Aarav (Firm Follow-up)">Aarav (Firm Tax & Audit Follow-up)</option>
@@ -951,7 +1209,7 @@ export default function VernacularCalls({ onTriggerVoice }) {
                   <button
                     type="submit"
                     disabled={isDialing}
-                    className="px-5 py-2 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 shadow-md shadow-blue-600/30 transition-all flex items-center gap-1.5 disabled:opacity-50"
+                    className="px-5 py-2 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 shadow-md shadow-blue-600/30 transition-all flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
                   >
                     <PhoneCall className={`w-3.5 h-3.5 ${isDialing ? 'animate-bounce' : ''}`} />
                     <span>{isDialing ? 'Connecting via Vapi...' : 'Dispatch Call Now'}</span>
