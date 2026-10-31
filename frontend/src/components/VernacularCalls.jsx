@@ -177,25 +177,30 @@ export default function VernacularCalls({ onTriggerVoice }) {
 
   const [callsList, setCallsList] = useState(initialCalls);
 
-  // Sync calls from backend
-  useEffect(() => {
+  // Sync calls from MongoDB backend
+  const fetchCalls = () => {
     fetch('http://localhost:8000/api/voice/calls')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && data.calls && data.calls.length > 0) {
-          // Merge spoken scripts into backend records
           const merged = data.calls.map((c) => {
             const match = initialCalls.find((i) => i.id === c.id);
             return {
               ...c,
-              ai_spoken: match ? match.ai_spoken : c.ai_transcript,
-              cust_spoken: match ? match.cust_spoken : c.customer_transcript
+              ai_spoken: c.ai_spoken || (match ? match.ai_spoken : c.ai_transcript),
+              cust_spoken: c.cust_spoken || (match ? match.cust_spoken : c.customer_transcript)
             };
           });
           setCallsList(merged);
         }
       })
       .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchCalls();
+    const interval = setInterval(fetchCalls, 4000);
+    return () => clearInterval(interval);
   }, []);
 
   const activeCall = callsList.find((c) => c.id === selectedCallId) || callsList[0];

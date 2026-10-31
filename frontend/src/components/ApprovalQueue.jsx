@@ -115,12 +115,16 @@ export default function ApprovalQueue({ onResolveApproval }) {
       const res = await fetch('http://localhost:8000/api/approvals');
       if (res.ok) {
         const data = await res.json();
-        if (data.pending && data.pending.length > 0) {
+        if (data.pending) {
           const parsed = data.pending.map((item) => {
             let payload = {};
-            try {
-              payload = JSON.parse(item.payload || '{}');
-            } catch (e) {}
+            if (typeof item.payload === 'object' && item.payload !== null) {
+              payload = item.payload;
+            } else if (typeof item.payload === 'string') {
+              try {
+                payload = JSON.parse(item.payload || '{}');
+              } catch (e) {}
+            }
             return {
               approval_id: item.approval_id,
               thread_id: item.thread_id,
@@ -129,7 +133,7 @@ export default function ApprovalQueue({ onResolveApproval }) {
               risk_level: payload.risk_level || 'HIGH_RISK',
               description: payload.reasoning || item.description,
               invoice_count: payload.invoice_count || 24,
-              tax_to_file: payload.tax_to_file ? `₹${Number(payload.tax_to_file).toLocaleString('en-IN')}` : '₹42,500',
+              tax_to_file: payload.tax_to_file ? ('₹' + Number(payload.tax_to_file).toLocaleString('en-IN')) : '₹42,500',
               portal: payload.portal || 'mock GST India Portal',
               trigger_reason: payload.trigger || 'Circuit Breaker Gate (financial submission)',
               account: payload.account || 'HDFC Bank *4321',
@@ -141,6 +145,28 @@ export default function ApprovalQueue({ onResolveApproval }) {
           });
           setPendingList(parsed);
         }
+        if (data.resolved && data.resolved.length > 0) {
+          const parsedResolved = data.resolved.map((item) => {
+            let p = {};
+            if (typeof item.payload === 'object' && item.payload !== null) {
+              p = item.payload;
+            } else if (typeof item.payload === 'string') {
+              try { p = JSON.parse(item.payload || '{}'); } catch (e) {}
+            }
+            return {
+              approval_id: item.approval_id,
+              thread_id: item.thread_id,
+              action_type: item.action_type,
+              target_entity: p.entity_name || item.description,
+              amount: p.amount ? ('₹' + Number(p.amount).toLocaleString('en-IN')) : '₹42,500.00',
+              resolved_via: p.resolved_via || 'WhatsApp',
+              status: item.status,
+              timestamp: item.resolved_at || item.created_at || 'Just now',
+              notes: item.description
+            };
+          });
+          setHistoryList(parsedResolved);
+        }
       }
     } catch (e) {
       console.warn('Backend approvals sync:', e);
@@ -149,6 +175,8 @@ export default function ApprovalQueue({ onResolveApproval }) {
 
   useEffect(() => {
     fetchApprovals();
+    const interval = setInterval(fetchApprovals, 4000);
+    return () => clearInterval(interval);
   }, []);
 
   const showNotification = (msg) => {
