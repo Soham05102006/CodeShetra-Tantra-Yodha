@@ -1,5 +1,6 @@
 import React from 'react';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
+import { useAppLanguage } from '../context/ThemeLanguageContext.jsx';
 
 export default function MetricsRow({ 
   totalInvoiced = '₹3,42,500', 
@@ -8,12 +9,14 @@ export default function MetricsRow({
   pendingApprovals = 1,
   onOpenApprovalQueue
 }) {
+  const { t } = useAppLanguage();
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {/* 1. Total Invoiced */}
-      <div className="bg-[#111622] border border-[#1d2538] rounded-2xl p-4 shadow-sm">
+      <div className="bg-[#111622] border border-[#1d2538] rounded-2xl p-4 shadow-sm transition-colors">
         <div className="text-[11px] font-medium text-slate-400 mb-1.5">
-          Total Invoiced
+          {t('totalInvoiced', 'Total Invoiced')}
         </div>
         <div className="text-xl font-bold font-mono text-slate-100">
           {totalInvoiced}
@@ -21,9 +24,9 @@ export default function MetricsRow({
       </div>
 
       {/* 2. Unresolved Overdue */}
-      <div className="bg-[#111622] border border-[#1d2538] rounded-2xl p-4 shadow-sm">
+      <div className="bg-[#111622] border border-[#1d2538] rounded-2xl p-4 shadow-sm transition-colors">
         <div className="text-[11px] font-medium text-slate-400 mb-1.5">
-          Unresolved Overdue
+          {t('unresolvedOverdue', 'Unresolved Overdue')}
         </div>
         <div className="text-xl font-bold font-mono text-slate-100">
           {unresolvedOverdue}
@@ -31,10 +34,10 @@ export default function MetricsRow({
       </div>
 
       {/* 3. Completed Call */}
-      <div className="bg-[#111622] border border-[#1d2538] rounded-2xl p-4 shadow-sm flex items-center justify-between">
+      <div className="bg-[#111622] border border-[#1d2538] rounded-2xl p-4 shadow-sm flex items-center justify-between transition-colors">
         <div>
           <div className="text-[11px] font-medium text-slate-400 mb-1.5">
-            Completed Call
+            {t('completedCalls', 'Completed Calls')}
           </div>
           <div className="text-xl font-bold font-mono text-slate-100">
             {completedCalls}
@@ -56,7 +59,7 @@ export default function MetricsRow({
       >
         <div>
           <div className="text-[11px] font-medium text-slate-400 mb-1.5">
-            Pending approval
+            {t('pendingApprovals', 'Pending Approvals')}
           </div>
           <div className="text-xl font-bold font-mono text-slate-100 flex items-center gap-1.5">
             <span>{pendingApprovals} Request{pendingApprovals !== 1 ? 's' : ''}</span>

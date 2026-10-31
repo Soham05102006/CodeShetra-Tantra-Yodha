@@ -12,21 +12,24 @@ import {
   MessageCircle,
   ShieldCheck
 } from 'lucide-react';
+import { useAppLanguage } from '../context/ThemeLanguageContext.jsx';
 
 export default function Sidebar({ activeNav = 'Operational Hub', onNavSelect, pendingApprovalCount = 1 }) {
+  const { t } = useAppLanguage();
+
   const navItems = [
-    { id: 'Operational Hub', label: 'Operational Hub', icon: LayoutDashboard },
-    { id: 'E-Commerce', label: 'E-Commerce', icon: ShoppingBag, badge: 'STORE' },
-    { id: 'Ledger & Invoices', label: 'Ledger & Invoices', icon: FileText },
-    { id: 'Vernacular Calls', label: 'Vernacular Calls', icon: PhoneCall },
-    { id: 'Approval Queue', label: 'Approval Queue', icon: Clock, badge: pendingApprovalCount > 0 ? pendingApprovalCount : null },
-    { id: 'Audit Logs', label: 'Audit Logs', icon: Terminal },
-    { id: 'Party Directory', label: 'Party Directory', icon: Users },
-    { id: 'Configuration', label: 'Configuration', icon: Settings },
+    { id: 'Operational Hub', label: t('operationalHub', 'Operational Hub'), icon: LayoutDashboard },
+    { id: 'E-Commerce', label: t('ecommerce', 'E-Commerce'), icon: ShoppingBag, badge: 'STORE' },
+    { id: 'Ledger & Invoices', label: t('ledgerInvoices', 'Ledger & Invoices'), icon: FileText },
+    { id: 'Vernacular Calls', label: t('vernacularCalls', 'Vernacular Calls'), icon: PhoneCall },
+    { id: 'Approval Queue', label: t('approvalQueue', 'Approval Queue'), icon: Clock, badge: pendingApprovalCount > 0 ? pendingApprovalCount : null },
+    { id: 'Audit Logs', label: t('auditLogs', 'Audit Logs'), icon: Terminal },
+    { id: 'Party Directory', label: t('partyDirectory', 'Party Directory'), icon: Users },
+    { id: 'Configuration', label: t('configuration', 'Configuration'), icon: Settings },
   ];
 
   return (
-    <aside className="w-64 bg-[#0e131d] border-r border-[#1a2335] flex flex-col justify-between select-none shrink-0 min-h-screen">
+    <aside className="w-64 bg-[#0e131d] border-r border-[#1a2335] flex flex-col justify-between select-none shrink-0 min-h-screen transition-colors">
       {/* Top Branding */}
       <div>
         <div className="p-5 flex items-center gap-3 border-b border-[#1a2335]/60">
@@ -35,12 +38,12 @@ export default function Sidebar({ activeNav = 'Operational Hub', onNavSelect, pe
           </div>
           <div>
             <h1 className="text-xs font-bold tracking-wider text-slate-100 uppercase">
-              Sharma Enterprises
+              {t('companyName', 'Sharma Enterprises')}
             </h1>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
               <span className="text-[10px] text-slate-400 font-medium tracking-wide">
-                AI-EMPLOYEE
+                {t('aiEmployee', 'AI-EMPLOYEE')}
               </span>
             </div>
           </div>
@@ -48,7 +51,7 @@ export default function Sidebar({ activeNav = 'Operational Hub', onNavSelect, pe
 
         {/* Section Label */}
         <div className="px-5 pt-5 pb-2 text-[10px] font-bold tracking-wider text-slate-500 uppercase">
-          OPERATIONAL HUB
+          {t('operationalHubSection', 'OPERATIONAL HUB')}
         </div>
 
         {/* Navigation Items */}
@@ -91,7 +94,7 @@ export default function Sidebar({ activeNav = 'Operational Hub', onNavSelect, pe
         <div className="flex items-center justify-between px-2 text-xs">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="text-slate-300 text-xs font-medium">Agent Online</span>
+            <span className="text-slate-300 text-xs font-medium">{t('agentOnline', 'Agent Online')}</span>
           </div>
           <Activity className="w-4 h-4 text-emerald-400" />
         </div>
@@ -107,9 +110,9 @@ export default function Sidebar({ activeNav = 'Operational Hub', onNavSelect, pe
             </div>
           </div>
           <div className="min-w-0">
-            <div className="text-xs font-semibold text-slate-200">Owner</div>
+            <div className="text-xs font-semibold text-slate-200">{t('owner', 'Owner')}</div>
             <div className="text-[10px] text-slate-400 truncate">
-              WhatsApp connected (+91 98765 43210)
+              {t('whatsappConnected', 'WhatsApp connected')} (+91 98765 43210)
             </div>
           </div>
         </div>

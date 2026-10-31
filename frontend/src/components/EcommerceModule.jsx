@@ -44,10 +44,12 @@ import {
   Volume2,
   VolumeX
 } from 'lucide-react';
+import { useAppLanguage } from '../context/ThemeLanguageContext.jsx';
 
 const API_BASE = 'http://localhost:8000/api/ecommerce';
 
 export default function EcommerceModule({ onTriggerVoice }) {
+  const { language, t } = useAppLanguage();
   // Navigation sub-tabs: 'storefront' | 'cart' | 'dashboard' | 'products' | 'categories' | 'orders' | 'inventory' | 'coupons' | 'customers' | 'ai-assistant'
   const [activeTab, setActiveTab] = useState('storefront');
 
@@ -897,14 +899,14 @@ export default function EcommerceModule({ onTriggerVoice }) {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-bold tracking-tight text-white">
-                  E-Commerce Operations & MSME Storefront
+                  {t('ecommerceTitle', 'E-Commerce Operations & MSME Storefront')}
                 </h1>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  LIVE ATLAS SYNC
+                  {t('liveAtlasSync', 'LIVE ATLAS SYNC')}
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Full-stack B2B procurement catalog, real-time inventory deduction, Razorpay checkout, and vernacular voice query AI.
+                {t('ecommerceSubtitle', 'Full-stack B2B procurement catalog, real-time inventory deduction, Razorpay checkout, and vernacular voice query AI.')}
               </p>
             </div>
           </div>
@@ -915,7 +917,7 @@ export default function EcommerceModule({ onTriggerVoice }) {
               className="relative flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#172136] hover:bg-[#1d2a45] border border-sky-500/30 text-sky-400 text-xs font-semibold transition-all shadow-sm"
             >
               <ShoppingCart className="w-4 h-4" />
-              <span>Cart</span>
+              <span>{t('cart', 'Cart')}</span>
               {cart.length > 0 && (
                 <span className="bg-sky-500 text-white font-mono text-[10px] px-1.5 py-0.2 rounded-full font-bold">
                   {cart.reduce((s, i) => s + i.quantity, 0)}
@@ -930,7 +932,7 @@ export default function EcommerceModule({ onTriggerVoice }) {
               title="Refresh from MongoDB Atlas"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-sky-400' : ''}`} />
-              <span>Sync</span>
+              <span>{t('sync', 'Sync')}</span>
             </button>
 
             <button
@@ -954,7 +956,7 @@ export default function EcommerceModule({ onTriggerVoice }) {
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white text-xs font-semibold shadow-md shadow-sky-600/25 transition-all"
             >
               <Plus className="w-4 h-4" />
-              <span>Add Product</span>
+              <span>{t('addProduct', 'Add Product')}</span>
             </button>
           </div>
         </div>
@@ -962,16 +964,16 @@ export default function EcommerceModule({ onTriggerVoice }) {
         {/* Sub-Navigation Tabs */}
         <div className="flex items-center gap-1.5 mt-5 pt-4 border-t border-[#1e273c]/70 overflow-x-auto no-scrollbar">
           {[
-            { id: 'storefront', label: 'Storefront', icon: ShoppingBag },
-            { id: 'cart', label: `Cart & Checkout (${cart.length})`, icon: ShoppingCart },
-            { id: 'dashboard', label: 'Executive Analytics', icon: BarChart3 },
-            { id: 'products', label: `Products (${products.length})`, icon: Package },
-            { id: 'categories', label: `Categories (${categories.length})`, icon: Layers },
-            { id: 'orders', label: `Orders (${orders.length})`, icon: ClipboardList },
-            { id: 'inventory', label: 'Inventory & Stock', icon: Boxes },
-            { id: 'coupons', label: `Coupons (${coupons.length})`, icon: Tag },
-            { id: 'customers', label: `Customers (${customers.length})`, icon: Users },
-            { id: 'ai-assistant', label: 'AI Shopping Assistant', icon: Bot, badge: 'VAPI' }
+            { id: 'storefront', label: t('storefront', 'Storefront'), icon: ShoppingBag },
+            { id: 'cart', label: `${t('cartCheckout', 'Cart & Checkout')} (${cart.length})`, icon: ShoppingCart },
+            { id: 'dashboard', label: t('analytics', 'Executive Analytics'), icon: BarChart3 },
+            { id: 'products', label: `${t('products', 'Products')} (${products.length})`, icon: Package },
+            { id: 'categories', label: `${t('categories', 'Categories')} (${categories.length})`, icon: Layers },
+            { id: 'orders', label: `${t('orders', 'Orders')} (${orders.length})`, icon: ClipboardList },
+            { id: 'inventory', label: t('inventory', 'Inventory & Stock'), icon: Boxes },
+            { id: 'coupons', label: `${t('coupons', 'Coupons')} (${coupons.length})`, icon: Tag },
+            { id: 'customers', label: `${t('customers', 'Customers')} (${customers.length})`, icon: Users },
+            { id: 'ai-assistant', label: t('aiAssistant', 'AI Shopping Assistant'), icon: Bot, badge: 'VAPI' }
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
