@@ -11,6 +11,7 @@ import LedgerAndInvoices from './components/LedgerAndInvoices';
 import VernacularCalls from './components/VernacularCalls';
 import ApprovalQueue from './components/ApprovalQueue';
 import AuditLogs from './components/AuditLogs';
+import PartyDirectory from './components/PartyDirectory';
 import { 
   PhoneCall, 
   CheckCircle2, 
@@ -362,6 +363,8 @@ export default function App() {
             />
           ) : activeNav === 'Audit Logs' ? (
             <AuditLogs />
+          ) : activeNav === 'Party Directory' ? (
+            <PartyDirectory onTriggerVoice={handleTriggerVoice} />
           ) : (
             <>
               {/* Live Workflow Stepper Bar */}

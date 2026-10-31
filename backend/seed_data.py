@@ -90,6 +90,7 @@ def seed_database():
         cursor.execute("DROP TABLE IF EXISTS ledger_transactions")
         cursor.execute("DROP TABLE IF EXISTS approval_queue")
         cursor.execute("DROP TABLE IF EXISTS agent_audit_log")
+        cursor.execute("DROP TABLE IF EXISTS party_directory")
         conn.commit()
 
     init_db_sync()
@@ -436,8 +437,190 @@ def seed_database():
                 log
             )
 
+        # Seed master CRM party directory records
+        party_seed = [
+            (
+                "Sharma Metal Works",
+                "Supplier",
+                "+91 9876543210",
+                "+91 9876543210",
+                "27AABCS1429B1Z",
+                "VERIFIED",
+                "SHARMA METAL WORKS PRIVATE LIMITED",
+                "Mumbai",
+                "Maharashtra",
+                "Hindi (Bundeli)",
+                "10:00 AM - 02:00 PM",
+                "15 Days Credit",
+                50000.0,
+                94,
+                5.1,
+                342500.0,
+                "LOW",
+                json.dumps([
+                    "Last Call: 30 Oct - Promise of ₹15k confirmed via Vernacular Call.",
+                    "Document OCR: Verified & reconciled Invoice INV-025.",
+                    "Logistics Sync: Auto-notified on dispatch delay.",
+                    "WhatsApp Gate: Verified GST filing submission of ₹8,100."
+                ])
+            ),
+            (
+                "Jai Hind Traders",
+                "Supplier",
+                "+91 8576543211",
+                "+91 8576543211",
+                "27AAACS1234F1Z2",
+                "VERIFIED",
+                "JAI HIND TRADERS LLP",
+                "Pune",
+                "Maharashtra",
+                "Marathi",
+                "11:00 AM - 04:00 PM",
+                "30 Days Credit",
+                100000.0,
+                98,
+                2.3,
+                182600.0,
+                "LOW",
+                json.dumps([
+                    "WhatsApp Gate: Vendor payment of ₹82,600 authorized by Owner.",
+                    "ChromaDB Memory: Preferred payment method is RTGS/NEFT.",
+                    "Document Extraction: Invoice INV-024 reconciled with zero variance."
+                ])
+            ),
+            (
+                "Raj Logistics & Co.",
+                "Customer",
+                "+91 9976543212",
+                "+91 9976543212",
+                "03AABCR4589K1Z5",
+                "VERIFIED",
+                "RAJ LOGISTICS & FREIGHT SERVICES",
+                "Ludhiana",
+                "Punjab",
+                "Punjabi",
+                "02:00 PM - 06:00 PM",
+                "15 Days Credit",
+                40000.0,
+                89,
+                6.4,
+                96400.0,
+                "LOW",
+                json.dumps([
+                    "Outbound Call: Secured commitment for next billing cycle.",
+                    "Dispatch Tracking: Freight docket #9910 cleared.",
+                    "Credit Evaluation: Consistent 15-day settlement cycle."
+                ])
+            ),
+            (
+                "Karan Electricals",
+                "Supplier",
+                "+91 9176543213",
+                "+91 9176543213",
+                "27AAACK8891M1Z8",
+                "PENDING",
+                "KARAN ELECTRICAL INDUSTRIAL SUPPLIES",
+                "Nagpur",
+                "Maharashtra",
+                "Hindi",
+                "10:00 AM - 01:00 PM",
+                "Advance Only",
+                20000.0,
+                72,
+                12.8,
+                64200.0,
+                "MEDIUM",
+                json.dumps([
+                    "GST Portal Warning: GSTIN 27AAACK8891M1Z8 verification pending annual filing.",
+                    "Follow-up Call: Customer requested extension till Friday.",
+                    "Circuit Breaker Gate: Enforced manual sign-off for payouts."
+                ])
+            ),
+            (
+                "Mahata Enterprises",
+                "Customer",
+                "+91 7276543214",
+                "+91 7276543214",
+                "24AABCM9124P1Z3",
+                "VERIFIED",
+                "MAHATA ENTERPRISES PVT LTD",
+                "Ahmedabad",
+                "Gujarat",
+                "Gujarati",
+                "11:00 AM - 03:00 PM",
+                "21 Days Credit",
+                75000.0,
+                91,
+                4.1,
+                215000.0,
+                "LOW",
+                json.dumps([
+                    "ChromaDB Memory: Always pays within 48h when contacted in Gujarati.",
+                    "Reconciliation: Matched payment UTR88192 on 29 Oct.",
+                    "Ledger Audit: Zero disputed line items in past 6 months."
+                ])
+            ),
+            (
+                "Verma Logistics",
+                "Customer",
+                "+91 9811223344",
+                "+91 9811223344",
+                "27AAACM9981Q1ZX",
+                "VERIFIED",
+                "VERMA FREIGHT & HAULAGE SERVICES",
+                "Thane",
+                "Maharashtra",
+                "Hinglish",
+                "01:00 PM - 05:00 PM",
+                "15 Days Credit",
+                30000.0,
+                85,
+                7.0,
+                145000.0,
+                "MEDIUM",
+                json.dumps([
+                    "Circuit Breaker: Duplicate invoice draft INV-026 rejected by owner.",
+                    "Follow-up: Correct invoice re-submitted.",
+                    "Payment Log: Received partial payment ₹10,000 via IMPS."
+                ])
+            ),
+            (
+                "Apex Steel Fabricators",
+                "Supplier",
+                "+91 9423156789",
+                "+91 9423156789",
+                "27AAACA9012N1Z4",
+                "VERIFIED",
+                "APEX STEEL & FABRICATION INDUSTRIES",
+                "Nashik",
+                "Maharashtra",
+                "Marathi",
+                "10:00 AM - 02:00 PM",
+                "45 Days Credit",
+                150000.0,
+                96,
+                1.8,
+                520000.0,
+                "LOW",
+                json.dumps([
+                    "ChromaDB Memory: Tier-1 raw material supplier. High trust profile.",
+                    "Automated Approval: Auto-cleared PO matching standard pricing matrix."
+                ])
+            )
+        ]
+
+        for p in party_seed:
+            cursor.execute(
+                """
+                INSERT INTO party_directory 
+                (entity_name, party_type, phone_number, whatsapp_number, gstin, gstin_status, legal_name, city, state, preferred_language, calling_window, credit_terms, max_auto_approval_threshold, reliability_score, avg_payment_delay_days, total_invoiced, risk_level, interaction_history)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                p
+            )
+
         conn.commit()
-        print(f"Successfully seeded {len(SEED_RECORDS)} MSME transactions, {len(approvals_seed)} approvals, and audit trails.")
+        print(f"Successfully seeded {len(SEED_RECORDS)} MSME transactions, {len(approvals_seed)} approvals, audit trails, and {len(party_seed)} party directory profiles.")
 
 if __name__ == "__main__":
     seed_database()

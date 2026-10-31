@@ -25,6 +25,11 @@ from database import (
     get_all_approvals,
     resolve_approval,
     add_audit_log,
+    get_all_parties,
+    get_party_by_id,
+    create_party,
+    update_party_config,
+    get_party_summary,
     insert_invoice_transaction,
     update_transaction_status,
     get_overdue_transactions,
@@ -730,6 +735,121 @@ async def export_audit_trail(format: str = "csv"):
             headers={"Content-Disposition": "attachment; filename=agent_execution_audit_trail.csv"}
         )
     return JSONResponse(content={"status": "SUCCESS", "logs": logs})
+
+# ==========================================
+# PARTY DIRECTORY / MASTER CRM APIS
+# ==========================================
+
+class PartyCreateRequest(BaseModel):
+    entity_name: str
+    party_type: str = "Supplier"
+    phone_number: str
+    whatsapp_number: Optional[str] = None
+    gstin: str
+    gstin_status: str = "VERIFIED"
+    legal_name: Optional[str] = None
+    city: str = "Mumbai"
+    state: str = "Maharashtra"
+    preferred_language: str = "Hindi (Bundeli)"
+    calling_window: str = "10:00 AM - 02:00 PM"
+    credit_terms: str = "15 Days Credit"
+    max_auto_approval_threshold: float = 50000.0
+    reliability_score: int = 90
+    avg_payment_delay_days: float = 4.0
+    total_invoiced: float = 100000.0
+    risk_level: str = "LOW"
+
+class PartyConfigUpdate(BaseModel):
+    preferred_language: Optional[str] = None
+    calling_window: Optional[str] = None
+    max_auto_approval_threshold: Optional[float] = None
+    credit_terms: Optional[str] = None
+    party_type: Optional[str] = None
+    gstin_status: Optional[str] = None
+    risk_level: Optional[str] = None
+
+@app.get("/api/parties")
+async def list_parties(
+    party_type: Optional[str] = None,
+    gstin_status: Optional[str] = None,
+    language: Optional[str] = None,
+    search: Optional[str] = None,
+    sort_by: Optional[str] = None
+):
+    parties = await get_all_parties(
+        party_type=party_type,
+        gstin_status=gstin_status,
+        language=language,
+        search=search,
+        sort_by=sort_by
+    )
+    summary = await get_party_summary()
+    return {
+        "status": "SUCCESS",
+        "count": len(parties),
+        "summary": summary,
+        "parties": parties
+    }
+
+@app.get("/api/parties/{party_id}")
+async def get_party_profile(party_id: int):
+    party = await get_party_by_id(party_id)
+    if not party:
+        raise HTTPException(status_code=404, detail="Party not found")
+    return {"status": "SUCCESS", "party": party}
+
+@app.post("/api/parties/create")
+async def create_party_profile(req: PartyCreateRequest):
+    party_id = await create_party(req.model_dump())
+    created = await get_party_by_id(party_id)
+    await manager.broadcast({"type": "party_created", "party": created})
+    return {"status": "SUCCESS", "party_id": party_id, "party": created}
+
+@app.get("/api/parties/{party_id}/memory")
+async def get_party_memory(party_id: int):
+    party = await get_party_by_id(party_id)
+    if not party:
+        raise HTTPException(status_code=404, detail="Party not found")
+    
+    history_raw = party.get("interaction_history", "[]")
+    history = json.loads(history_raw) if history_raw else []
+
+    return {
+        "status": "SUCCESS",
+        "party_id": party_id,
+        "entity_name": party.get("entity_name"),
+        "chromadb_collection": "vendor_memory",
+        "memory_records": history,
+        "credit_profile": {
+            "reliability_score": party.get("reliability_score", 90),
+            "risk_level": party.get("risk_level", "LOW"),
+            "avg_payment_delay_days": party.get("avg_payment_delay_days", 4.2),
+            "total_invoiced": party.get("total_invoiced", 342500.0)
+        }
+    }
+
+@app.put("/api/parties/{party_id}/config")
+async def update_party_configuration(party_id: int, req: PartyConfigUpdate):
+    updated = await update_party_config(party_id, req.model_dump(exclude_unset=True))
+    if not updated:
+        raise HTTPException(status_code=404, detail="Party not found")
+    await manager.broadcast({"type": "party_updated", "party": updated})
+    return {"status": "SUCCESS", "party": updated}
+
+@app.post("/api/parties/{party_id}/trigger-call")
+async def trigger_party_voice_call(party_id: int):
+    party = await get_party_by_id(party_id)
+    if not party:
+        raise HTTPException(status_code=404, detail="Party not found")
+    
+    call_res = await voice_dispatcher.dispatch_call(
+        customer_name=party["entity_name"],
+        phone_number=party["phone_number"],
+        invoice_number=f"CRM-{party_id}",
+        amount_due=party.get("total_invoiced", 15000.0),
+        thread_id=f"party-call-{party_id}"
+    )
+    return {"status": "CALL_DISPATCHED", "party": party["entity_name"], "call": call_res}
 
 @app.post("/api/reset-demo")
 async def reset_demo_data():
