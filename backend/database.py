@@ -6,6 +6,7 @@ Provides both asynchronous (aiosqlite) and synchronous (sqlite3) helper function
 
 import os
 import sqlite3
+import json
 import aiosqlite
 from typing import List, Dict, Any, Optional
 from datetime import datetime
@@ -80,6 +81,13 @@ CREATE TABLE IF NOT EXISTS party_directory (
     risk_level TEXT DEFAULT 'LOW',
     interaction_history TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS system_configuration (
+    config_key TEXT PRIMARY KEY,
+    config_value TEXT NOT NULL,
+    category TEXT DEFAULT 'GENERAL',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 """
@@ -481,4 +489,111 @@ async def get_party_summary() -> Dict[str, Any]:
             "avg_reliability_score": f"{avg_reliability} / 100",
             "promptness_change": "+4.2% overall payment promptness"
         }
+
+# --- System Configuration Persistence ---
+
+DEFAULT_SYSTEM_CONFIGS = {
+    "gemini_api_key": "AIzaSyD*********************************",
+    "gemini_connected": "true",
+    "twilio_account_sid": "AC77****************************",
+    "twilio_auth_token": "auth****************************",
+    "twilio_owner_phone": "+91 98765 43210",
+    "twilio_connected": "true",
+    "vapi_api_key": "vapi_live_****************************",
+    "vapi_voice_model": "azure/hi-IN-SwaraNeural",
+    "vapi_connected": "true",
+    "ngrok_url": "https://ai01-msme.ngrok-free.app",
+    "financial_payout_limit": "50000",
+    "gstr_approval_required": "true",
+    "voice_outbound_consent": "true",
+    "hold_high_stakes": "true",
+    "require_gst_portal_approval": "true",
+    "require_outbound_wire_approval": "true",
+    "require_vendor_bank_modify_approval": "true",
+    "auto_remind_whatsapp": "false",
+    "emergency_kill_switch": "false",
+    "default_dialect": "Hinglish (Mixed Hindi/English)",
+    "tts_personality": "Female (Aditi / Ind-En)",
+    "tts_speed": "1.0x",
+    "fallback_language": "Default to Hindi if dialect unclassified.",
+    "calling_window_start": "10:00 AM IST",
+    "calling_window_end": "04:00 PM IST",
+    "max_daily_retries": "2",
+    "tone_preference": "Polite & Respectful",
+    "active_dialects": json.dumps(["Hindi (Bundeli & Standard)", "Marathi", "Gujarati", "Punjabi"]),
+    "system_prompt_override": "You are an empathetic, culturally fluent MSME finance manager for Sharma Enterprises. Maintain an understanding, collaborative tone while securing explicit payment commitment dates.",
+    "whatsapp_signature": "- AI Accounts Dept, Sharma Enterprises",
+    "offline_model_fallback": "ollama/qwen2.5:7b",
+    "use_offline_fallback": "false",
+    "sqlite_db_path": "./data/app.db",
+    "chroma_db_path": "./chroma_db",
+    "db_storage_size": "18.4 MB",
+    "db_status": "HEALTHY",
+    "aes_encryption": "ACTIVE"
+}
+
+async def get_all_system_config() -> Dict[str, Any]:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute("SELECT config_key, config_value FROM system_configuration") as cursor:
+            rows = await cursor.fetchall()
+            db_configs = {row["config_key"]: row["config_value"] for row in rows}
+    
+    # Merge with defaults
+    result = dict(DEFAULT_SYSTEM_CONFIGS)
+    result.update(db_configs)
+    
+    # Parse json fields and numbers/booleans for client ease
+    parsed = {}
+    for k, v in result.items():
+        if v in ("true", "True"):
+            parsed[k] = True
+        elif v in ("false", "False"):
+            parsed[k] = False
+        elif k in ("financial_payout_limit", "max_daily_retries"):
+            try:
+                parsed[k] = int(v)
+            except ValueError:
+                parsed[k] = v
+        elif k == "active_dialects":
+            try:
+                parsed[k] = json.loads(v)
+            except Exception:
+                parsed[k] = ["Hindi (Bundeli & Standard)", "Marathi", "Gujarati", "Punjabi"]
+        else:
+            parsed[k] = v
+    return parsed
+
+async def update_multiple_system_configs(config_dict: Dict[str, Any]) -> Dict[str, Any]:
+    async with aiosqlite.connect(DB_PATH) as db:
+        now = datetime.utcnow().isoformat()
+        for k, v in config_dict.items():
+            if isinstance(v, (dict, list)):
+                val_str = json.dumps(v)
+            elif isinstance(v, bool):
+                val_str = "true" if v else "false"
+            else:
+                val_str = str(v)
+            
+            await db.execute(
+                """
+                INSERT INTO system_configuration (config_key, config_value, updated_at)
+                VALUES (?, ?, ?)
+                ON CONFLICT(config_key) DO UPDATE SET
+                    config_value = excluded.config_value,
+                    updated_at = excluded.updated_at
+                """,
+                (k, val_str, now)
+            )
+        await db.commit()
+    return await get_all_system_config()
+
+async def get_kill_switch_state() -> bool:
+    configs = await get_all_system_config()
+    return bool(configs.get("emergency_kill_switch", False))
+
+async def set_kill_switch_state(enabled: bool) -> bool:
+    await update_multiple_system_configs({"emergency_kill_switch": enabled})
+    return enabled
+
 

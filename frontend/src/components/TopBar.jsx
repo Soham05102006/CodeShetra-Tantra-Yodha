@@ -12,6 +12,7 @@ import {
 export default function TopBar({ 
   activeNav = 'Operational Hub', 
   onOpenNotifications,
+  onOpenSettings,
   onTriggerVoice,
   onTriggerBrowserDemo,
   onResetDemo,
@@ -73,6 +74,7 @@ export default function TopBar({
 
         {/* Settings Icon */}
         <button 
+          onClick={onOpenSettings}
           className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-[#131926] transition-all cursor-pointer"
           title="Settings & Integrations"
         >

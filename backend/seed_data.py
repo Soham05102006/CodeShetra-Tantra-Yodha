@@ -91,6 +91,7 @@ def seed_database():
         cursor.execute("DROP TABLE IF EXISTS approval_queue")
         cursor.execute("DROP TABLE IF EXISTS agent_audit_log")
         cursor.execute("DROP TABLE IF EXISTS party_directory")
+        cursor.execute("DROP TABLE IF EXISTS system_configuration")
         conn.commit()
 
     init_db_sync()
@@ -619,8 +620,55 @@ def seed_database():
                 p
             )
 
+        # Seed initial system configuration
+        configs = [
+            ("gemini_api_key", "AIzaSyD*********************************", "API"),
+            ("gemini_connected", "true", "API"),
+            ("twilio_account_sid", "AC77****************************", "API"),
+            ("twilio_auth_token", "auth****************************", "API"),
+            ("twilio_owner_phone", "+91 98765 43210", "API"),
+            ("twilio_connected", "true", "API"),
+            ("vapi_api_key", "vapi_live_****************************", "API"),
+            ("vapi_voice_model", "azure/hi-IN-SwaraNeural", "API"),
+            ("vapi_connected", "true", "API"),
+            ("ngrok_url", "https://ai01-msme.ngrok-free.app", "API"),
+            ("financial_payout_limit", "50000", "SAFETY"),
+            ("gstr_approval_required", "true", "SAFETY"),
+            ("voice_outbound_consent", "true", "SAFETY"),
+            ("hold_high_stakes", "true", "SAFETY"),
+            ("require_gst_portal_approval", "true", "SAFETY"),
+            ("require_outbound_wire_approval", "true", "SAFETY"),
+            ("require_vendor_bank_modify_approval", "true", "SAFETY"),
+            ("auto_remind_whatsapp", "false", "SAFETY"),
+            ("emergency_kill_switch", "false", "SAFETY"),
+            ("default_dialect", "Hinglish (Mixed Hindi/English)", "VOICE"),
+            ("tts_personality", "Female (Aditi / Ind-En)", "VOICE"),
+            ("tts_speed", "1.0x", "VOICE"),
+            ("fallback_language", "Default to Hindi if dialect unclassified.", "VOICE"),
+            ("calling_window_start", "10:00 AM IST", "VOICE"),
+            ("calling_window_end", "04:00 PM IST", "VOICE"),
+            ("max_daily_retries", "2", "VOICE"),
+            ("tone_preference", "Polite & Respectful", "VOICE"),
+            ("active_dialects", json.dumps(["Hindi (Bundeli & Standard)", "Marathi", "Gujarati", "Punjabi"]), "VOICE"),
+            ("system_prompt_override", "You are an empathetic, culturally fluent MSME finance manager for Sharma Enterprises. Maintain an understanding, collaborative tone while securing explicit payment commitment dates.", "PROMPT"),
+            ("whatsapp_signature", "- AI Accounts Dept, Sharma Enterprises", "PROMPT"),
+            ("offline_model_fallback", "ollama/qwen2.5:7b", "MODEL"),
+            ("use_offline_fallback", "false", "MODEL"),
+            ("sqlite_db_path", "./data/app.db", "SYSTEM"),
+            ("chroma_db_path", "./chroma_db", "SYSTEM"),
+            ("db_storage_size", "18.4 MB", "SYSTEM"),
+            ("db_status", "HEALTHY", "SYSTEM")
+        ]
+
+        for k, v, cat in configs:
+            cursor.execute(
+                "INSERT INTO system_configuration (config_key, config_value, category) VALUES (?, ?, ?)",
+                (k, v, cat)
+            )
+
         conn.commit()
-        print(f"Successfully seeded {len(SEED_RECORDS)} MSME transactions, {len(approvals_seed)} approvals, audit trails, and {len(party_seed)} party directory profiles.")
+        print(f"Successfully seeded {len(SEED_RECORDS)} MSME transactions, {len(approvals_seed)} approvals, audit trails, {len(party_seed)} party profiles, and {len(configs)} system configurations.")
 
 if __name__ == "__main__":
     seed_database()
+

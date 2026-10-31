@@ -12,6 +12,7 @@ import VernacularCalls from './components/VernacularCalls';
 import ApprovalQueue from './components/ApprovalQueue';
 import AuditLogs from './components/AuditLogs';
 import PartyDirectory from './components/PartyDirectory';
+import Configuration from './components/Configuration';
 import { 
   PhoneCall, 
   CheckCircle2, 
@@ -308,6 +309,7 @@ export default function App() {
         <TopBar 
           activeNav={activeNav}
           onOpenNotifications={() => setIsModalOpen(true)}
+          onOpenSettings={() => setActiveNav('Configuration')}
           onTriggerVoice={() => handleTriggerVoice()}
           onTriggerBrowserDemo={handleTriggerBrowserDemo}
           onResetDemo={handleResetDemo}
@@ -365,6 +367,8 @@ export default function App() {
             <AuditLogs />
           ) : activeNav === 'Party Directory' ? (
             <PartyDirectory onTriggerVoice={handleTriggerVoice} />
+          ) : activeNav === 'Configuration' ? (
+            <Configuration />
           ) : (
             <>
               {/* Live Workflow Stepper Bar */}
