@@ -72,3 +72,83 @@ body {
 .radar-ping {
   animation: ping-slow 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
+
+
+/* ========================================================
+   LIGHT THEME OVERRIDES (Clean MSME Professional Slate)
+   ======================================================== */
+body.light-theme {
+  --bg-dark: #f8fafc;
+  --card-bg: rgba(255, 255, 255, 0.95);
+  --card-border: rgba(226, 232, 240, 0.9);
+  background-color: #f1f5f9;
+  color: #0f172a;
+  color-scheme: light;
+}
+
+body.light-theme .bg-\[\#0c1017\],
+body.light-theme .bg-\[\#0B0F17\],
+body.light-theme .bg-\[\#0e131d\] {
+  background-color: #f8fafc !important;
+}
+
+body.light-theme .bg-\[\#111726\],
+body.light-theme .bg-\[\#131926\],
+body.light-theme .bg-\[\#161e31\] {
+  background-color: #ffffff !important;
+}
+
+body.light-theme .bg-\[\#1a233a\],
+body.light-theme .bg-\[\#1f2b45\],
+body.light-theme .bg-\[\#151c2e\],
+body.light-theme .bg-\[\#172136\] {
+  background-color: #f1f5f9 !important;
+}
+
+body.light-theme .border-\[\#1a2335\],
+body.light-theme .border-\[\#1e273c\],
+body.light-theme .border-\[\#222e47\],
+body.light-theme .border-\[\#1e273a\],
+body.light-theme .border-\[\#23314f\] {
+  border-color: #e2e8f0 !important;
+}
+
+body.light-theme .text-slate-100,
+body.light-theme .text-white {
+  color: #0f172a !important;
+}
+
+body.light-theme .text-slate-200 {
+  color: #1e293b !important;
+}
+
+body.light-theme .text-slate-300 {
+  color: #334155 !important;
+}
+
+body.light-theme .text-slate-400 {
+  color: #64748b !important;
+}
+
+body.light-theme .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+body.light-theme .glass-panel {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(203, 213, 225, 0.8) !important;
+}
+
+body.light-theme aside {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+body.light-theme header {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+body.light-theme table tr:hover {
+  background-color: #f8fafc !important;
+}

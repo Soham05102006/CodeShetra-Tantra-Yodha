@@ -13,6 +13,7 @@ import ApprovalQueue from './components/ApprovalQueue';
 import AuditLogs from './components/AuditLogs';
 import PartyDirectory from './components/PartyDirectory';
 import Configuration from './components/Configuration';
+import EcommerceModule from './components/EcommerceModule';
 import { 
   PhoneCall, 
   CheckCircle2, 
@@ -348,7 +349,9 @@ export default function App() {
 
         {/* Dashboard Content */}
         <main className="p-6 space-y-5 max-w-[1700px] w-full mx-auto">
-          {activeNav === 'Ledger & Invoices' ? (
+          {activeNav === 'E-Commerce' ? (
+            <EcommerceModule onTriggerVoice={handleTriggerVoice} />
+          ) : activeNav === 'Ledger & Invoices' ? (
             <LedgerAndInvoices 
               transactions={transactions}
               onTriggerVoice={(inv) => handleTriggerVoice(inv)}

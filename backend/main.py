@@ -58,6 +58,7 @@ from agent_workflow import (
     notify_broadcasters
 )
 from webhooks.whatsapp import router as whatsapp_router
+from ecommerce_routes import router as ecommerce_router, seed_ecommerce_if_empty
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -67,6 +68,8 @@ async def lifespan(app: FastAPI):
         # Run idempotent migration to ensure seed data is present in Atlas
         rep = migrate_data()
         logger.info(f"Lifespan: MongoDB Atlas initialized. Baseline records verified: {rep.get('total_already_existing', 0)} existing, {rep.get('total_migrated', 0)} newly migrated.")
+        # Ensure E-Commerce collections and indexes are initialized
+        seed_ecommerce_if_empty()
     except Exception as e:
         logger.error(f"[Lifespan Notice] MongoDB Atlas initialization error: {e}")
     yield
@@ -96,6 +99,9 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # Include Twilio WhatsApp router
 app.include_router(whatsapp_router)
+
+# Include E-Commerce Router (Side Module)
+app.include_router(ecommerce_router, prefix="/api/ecommerce", tags=["E-Commerce"])
 
 # WebSocket Connection Manager
 class ConnectionManager:
