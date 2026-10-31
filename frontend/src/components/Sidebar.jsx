@@ -1,6 +1,7 @@
 import React from 'react';
 import { 
   LayoutDashboard, 
+  ShoppingBag,
   FileText, 
   PhoneCall, 
   Clock, 
@@ -15,6 +16,7 @@ import {
 export default function Sidebar({ activeNav = 'Operational Hub', onNavSelect, pendingApprovalCount = 1 }) {
   const navItems = [
     { id: 'Operational Hub', label: 'Operational Hub', icon: LayoutDashboard },
+    { id: 'E-Commerce', label: 'E-Commerce', icon: ShoppingBag, badge: 'STORE' },
     { id: 'Ledger & Invoices', label: 'Ledger & Invoices', icon: FileText },
     { id: 'Vernacular Calls', label: 'Vernacular Calls', icon: PhoneCall },
     { id: 'Approval Queue', label: 'Approval Queue', icon: Clock, badge: pendingApprovalCount > 0 ? pendingApprovalCount : null },
@@ -69,7 +71,11 @@ export default function Sidebar({ activeNav = 'Operational Hub', onNavSelect, pe
                   <span>{item.label}</span>
                 </div>
                 {item.badge && (
-                  <span className="bg-[#1c2436] text-slate-300 text-[10px] font-mono px-2 py-0.5 rounded-full border border-slate-700">
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                    item.badge === 'STORE'
+                      ? 'bg-sky-950/70 text-sky-300 border-sky-700/60 font-semibold'
+                      : 'bg-[#1c2436] text-slate-300 border-slate-700'
+                  }`}>
                     {item.badge}
                   </span>
                 )}
