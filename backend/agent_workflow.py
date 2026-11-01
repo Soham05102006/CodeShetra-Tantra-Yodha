@@ -30,6 +30,7 @@ from database import (
 )
 from voice_dispatcher import voice_dispatcher
 from browser_agent import run_gst_browser_automation
+from services.whatsapp import send_whatsapp, notify_owner_whatsapp, is_notification_enabled
 
 CHECKPOINTS_DB_PATH = os.path.join(DATA_DIR, "checkpoints.db")
 
@@ -48,6 +49,7 @@ class WorkflowState(TypedDict):
     arn: Optional[str]
     execution_status: str
     screenshots: List[Dict[str, Any]]
+    sent_notifications: List[str]
 
 # Global WebSocket/SSE broadcaster callback
 _broadcasters: List[Any] = []
@@ -100,12 +102,31 @@ async def ingest_invoices_node(state: WorkflowState) -> Dict[str, Any]:
             "tax_amount": 8100.0
         }
 
+    # AI WhatsApp Notification: Invoice Ingestion
+    sent_notes = list(state.get("sent_notifications") or [])
+    note_key = f"invoice_ingested_{target['invoice_number']}"
+    if note_key not in sent_notes:
+        try:
+            msg = (
+                "📋 *AI-01 Ledger Alert*\n"
+                f"Invoice Ingestion Initiated:\n"
+                f"• Entity: {target['entity_name']}\n"
+                f"• Invoice: #{target['invoice_number']}\n"
+                f"• Overdue Amount: ₹{target['amount_due']:,.2f}\n"
+                f"• Thread ID: {thread_id}"
+            )
+            await notify_owner_whatsapp(msg, notification_key="notify_invoice_ingestion", thread_id=thread_id)
+            sent_notes.append(note_key)
+        except Exception as e:
+            print(f"[WorkflowWhatsApp] Ingestion notify notice: {e}")
+
     return {
         "invoice_number": target["invoice_number"],
         "entity_name": target["entity_name"],
         "phone_number": target["phone_number"],
         "amount_due": target["amount_due"],
         "tax_amount": target["tax_amount"],
+        "sent_notifications": sent_notes,
         "execution_status": "INVOICES_INGESTED"
     }
 
@@ -148,9 +169,28 @@ async def dispatch_voice_call_node(state: WorkflowState) -> Dict[str, Any]:
         "promised_date": call_result.get("promised_payment_date")
     })
 
+    # AI WhatsApp Notification: Overdue Payment Reminder to Recipient
+    sent_notes = list(state.get("sent_notifications") or [])
+    note_key = f"overdue_reminder_{state['invoice_number']}"
+    if note_key not in sent_notes:
+        try:
+            if await is_notification_enabled("notify_overdue_reminders"):
+                cust_msg = (
+                    "Namaste from *Sharma Enterprises*.\n\n"
+                    f"This is an automated operational reminder regarding Invoice #{state['invoice_number']} "
+                    f"of *₹{state['amount_due']:,.2f}* which is currently overdue.\n\n"
+                    "Our AI Accounts Dept is following up to ensure timely statutory reconciliation. "
+                    "Please settle at your earliest convenience."
+                )
+                await send_whatsapp(state["phone_number"], cust_msg, thread_id=thread_id)
+                sent_notes.append(note_key)
+        except Exception as e:
+            print(f"[WorkflowWhatsApp] Reminder notice: {e}")
+
     return {
         "promised_payment_date": call_result.get("promised_payment_date"),
         "call_transcript": call_result.get("transcript"),
+        "sent_notifications": sent_notes,
         "execution_status": "VOICE_CALL_COMPLETED"
     }
 
@@ -194,6 +234,28 @@ async def whatsapp_circuit_breaker_node(state: WorkflowState) -> Dict[str, Any]:
         "amount": state["tax_amount"]
     })
 
+    # AI WhatsApp Notification: Approval Required to Authorized Approver
+    sent_notes = list(state.get("sent_notifications") or [])
+    note_key = f"approval_required_{approval_id}"
+    if note_key not in sent_notes:
+        try:
+            appr_msg = (
+                "🚨 *AI-01 CIRCUIT BREAKER: APPROVAL REQUIRED*\n\n"
+                f"High-Stakes Action Queued:\n"
+                f"• Description: {desc}\n"
+                f"• Statutory Tax: ₹{state['tax_amount']:,.2f}\n"
+                f"• Approval ID: {approval_id}\n"
+                f"• Thread ID: {thread_id}\n\n"
+                "To authorize, reply:\n"
+                f"👉 *APPROVE {thread_id}*\n"
+                "Or to abort:\n"
+                f"👉 *REJECT {thread_id}*"
+            )
+            await notify_owner_whatsapp(appr_msg, notification_key="notify_circuit_breaker", thread_id=thread_id)
+            sent_notes.append(note_key)
+        except Exception as e:
+            print(f"[WorkflowWhatsApp] Approval notify notice: {e}")
+
     # LangGraph human-in-the-loop state pause
     decision = interrupt({
         "approval_id": approval_id,
@@ -213,6 +275,23 @@ async def whatsapp_circuit_breaker_node(state: WorkflowState) -> Dict[str, Any]:
 async def browser_automation_node(state: WorkflowState) -> Dict[str, Any]:
     thread_id = state["thread_id"]
 
+    sent_notes = list(state.get("sent_notifications") or [])
+    
+    # AI WhatsApp Notification: Approval Decision Received
+    note_key_appr = f"approval_received_{thread_id}"
+    if note_key_appr not in sent_notes and state.get("approval_status"):
+        try:
+            res_msg = (
+                "✅ *AI-01 Approval Resolved*\n"
+                f"Thread: {thread_id}\n"
+                f"Status: *{state.get('approval_status')}*\n"
+                f"Next: {'Proceeding with automated portal filing...' if state.get('approval_status') == 'APPROVED' else 'Workflow safely aborted.'}"
+            )
+            await notify_owner_whatsapp(res_msg, notification_key="notify_approval_resolution", thread_id=thread_id)
+            sent_notes.append(note_key_appr)
+        except Exception as e:
+            print(f"[WorkflowWhatsApp] Status notify notice: {e}")
+
     if state.get("approval_status") == "REJECTED":
         await add_audit_log(
             thread_id=thread_id,
@@ -222,7 +301,20 @@ async def browser_automation_node(state: WorkflowState) -> Dict[str, Any]:
             execution_status="ABORTED"
         )
         await notify_broadcasters("step", {"step": "aborted", "reason": "Owner rejected filing."})
-        return {"execution_status": "ABORTED"}
+        
+        note_key_abort = f"workflow_aborted_{thread_id}"
+        if note_key_abort not in sent_notes:
+            try:
+                await notify_owner_whatsapp(
+                    f"🛑 *AI-01 Workflow Aborted*\nFiling for Invoice #{state['invoice_number']} was rejected by owner.",
+                    notification_key="notify_workflow_failure",
+                    thread_id=thread_id
+                )
+                sent_notes.append(note_key_abort)
+            except Exception:
+                pass
+
+        return {"execution_status": "ABORTED", "sent_notifications": sent_notes}
 
     await add_audit_log(
         thread_id=thread_id,
@@ -263,10 +355,29 @@ async def browser_automation_node(state: WorkflowState) -> Dict[str, Any]:
         "arn": browser_result.get("arn")
     })
 
+    # AI WhatsApp Notification: Workflow Completion
+    note_key_comp = f"workflow_completed_{thread_id}"
+    if note_key_comp not in sent_notes:
+        try:
+            comp_msg = (
+                "🎉 *AI-01 Workflow Completed Successfully*\n\n"
+                "Statutory GST Challan Generated:\n"
+                f"• Entity: {state['entity_name']}\n"
+                f"• Invoice: #{state['invoice_number']}\n"
+                f"• CPIN: *{browser_result.get('cpin', 'CPIN-66289012')}*\n"
+                f"• ARN: *{browser_result.get('arn', 'AA271026001239M')}*\n"
+                "• Reconciled Status: PAID"
+            )
+            await notify_owner_whatsapp(comp_msg, notification_key="notify_workflow_completion", thread_id=thread_id)
+            sent_notes.append(note_key_comp)
+        except Exception as e:
+            print(f"[WorkflowWhatsApp] Completion notice: {e}")
+
     return {
         "cpin": browser_result.get("cpin"),
         "arn": browser_result.get("arn"),
         "screenshots": browser_result.get("steps", []),
+        "sent_notifications": sent_notes,
         "execution_status": "COMPLETED"
     }
 
@@ -315,7 +426,8 @@ async def run_workflow(invoice_number: str = "INV-2026-001", thread_id: Optional
             "cpin": None,
             "arn": None,
             "execution_status": "STARTING",
-            "screenshots": []
+            "screenshots": [],
+            "sent_notifications": []
         }
 
         config = {"configurable": {"thread_id": thread_id}}

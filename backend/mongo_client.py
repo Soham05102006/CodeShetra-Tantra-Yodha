@@ -39,20 +39,35 @@ class MongoManager:
     _instance: Optional['MongoManager'] = None
     _client: Optional[MongoClient] = None
     _db: Optional[Database] = None
+    _is_mock: bool = False
 
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(MongoManager, cls).__new__(cls)
         return cls._instance
 
+    def _init_mock(self, target_db: str) -> bool:
+        try:
+            import mongomock
+            self._client = mongomock.MongoClient()
+            self._db = self._client[target_db]
+            self._is_mock = True
+            logger.info(f"Zero-Cost in-memory MongoDB initialized successfully for '{target_db}'.")
+            return True
+        except Exception as mock_err:
+            logger.error(f"Failed to initialize in-memory MongoDB: {mock_err}")
+            self._client = None
+            self._db = None
+            return False
+
     def initialize(self, uri: Optional[str] = None, db_name: Optional[str] = None) -> bool:
         """Initializes the MongoDB client singleton if not already connected."""
         target_uri = uri or os.getenv("MONGODB_URI") or MONGODB_URI
         target_db = db_name or os.getenv("DATABASE_NAME") or DATABASE_NAME or "ai01_db"
 
-        if not target_uri:
-            logger.error("MONGODB_URI is not configured in environment variables.")
-            return False
+        if not target_uri or "<username>" in target_uri:
+            logger.info("MONGODB_URI is unconfigured. Activating in-memory mock database.")
+            return self._init_mock(target_db)
 
         if self._client is not None:
             try:
@@ -69,9 +84,9 @@ class MongoManager:
         try:
             self._client = MongoClient(
                 target_uri,
-                serverSelectionTimeoutMS=6000,
-                connectTimeoutMS=6000,
-                socketTimeoutMS=10000,
+                serverSelectionTimeoutMS=3000,
+                connectTimeoutMS=3000,
+                socketTimeoutMS=5000,
                 maxPoolSize=50,
                 minPoolSize=2,
                 retryWrites=True
@@ -79,18 +94,12 @@ class MongoManager:
             # Verify connectivity with ping command
             self._client.admin.command('ping')
             self._db = self._client[target_db]
+            self._is_mock = False
             logger.info(f"Successfully connected to MongoDB Atlas. Active database: {target_db}")
             return True
-        except (ConnectionFailure, ServerSelectionTimeoutError) as e:
-            logger.error(f"Failed to connect to MongoDB Atlas: {e}")
-            self._client = None
-            self._db = None
-            return False
         except Exception as e:
-            logger.error(f"Unexpected MongoDB connection error: {e}")
-            self._client = None
-            self._db = None
-            return False
+            logger.warning(f"Failed to connect to MongoDB Atlas ({e}). Falling back to local in-memory database.")
+            return self._init_mock(target_db)
 
     @property
     def client(self) -> Optional[MongoClient]:

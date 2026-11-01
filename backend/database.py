@@ -60,7 +60,15 @@ DEFAULT_SYSTEM_CONFIGS = {
     "use_offline_fallback": "false",
     "mongodb_database": "ai01_db",
     "mongodb_status": "CONNECTED_ATLAS",
-    "aes_encryption": "ACTIVE"
+    "aes_encryption": "ACTIVE",
+    "whatsapp_service_url": "http://127.0.0.1:3001",
+    "whatsapp_owner_phone": "+91 98765 43210",
+    "notify_invoice_ingestion": "true",
+    "notify_overdue_reminders": "true",
+    "notify_circuit_breaker": "true",
+    "notify_approval_resolution": "true",
+    "notify_workflow_completion": "true",
+    "notify_workflow_failure": "true"
 }
 
 def init_db_sync():
@@ -338,7 +346,7 @@ async def get_pending_approvals() -> List[Dict[str, Any]]:
 async def get_approval_by_thread(thread_id: str) -> Optional[Dict[str, Any]]:
     """Retrieves the latest pending approval for a specific LangGraph execution thread."""
     col = get_mongo_collection("approval_queue")
-    doc = col.find_one({"thread_id": thread_id, "status": "PENDING"}, sort=[("created_at", -1)])
+    doc = col.find_one({"thread_id": thread_id}, sort=[("created_at", -1)])
     return serialize_mongo_doc(doc)
 
 async def get_all_approvals() -> List[Dict[str, Any]]:
@@ -627,3 +635,55 @@ async def set_kill_switch_state(enabled: bool) -> bool:
     """Sets the emergency circuit-breaker kill switch state in MongoDB."""
     await update_multiple_system_configs({"emergency_kill_switch": enabled})
     return enabled
+
+
+# ==========================================
+# 6. WHATSAPP DISPATCHER & AUDIT
+# ==========================================
+
+async def save_whatsapp_message(
+    direction: str,
+    phone: str,
+    message: str,
+    status: str = "SENT",
+    message_id: Optional[str] = None,
+    error: Optional[str] = None
+) -> Dict[str, Any]:
+    """Records an inbound or outbound WhatsApp message in the database."""
+    col = get_mongo_collection("whatsapp_messages")
+    now_iso = datetime.now(timezone.utc).isoformat()
+    doc = {
+        "direction": direction,
+        "phone": phone,
+        "message": message,
+        "status": status,
+        "message_id": message_id or f"msg-{int(datetime.now().timestamp()*1000)}",
+        "error": error,
+        "timestamp": now_iso,
+        "created_at": now_iso
+    }
+    col.insert_one(doc)
+    return serialize_mongo_doc(doc)
+
+async def get_whatsapp_messages(limit: int = 50) -> List[Dict[str, Any]]:
+    """Retrieves recent WhatsApp communications history."""
+    col = get_mongo_collection("whatsapp_messages")
+    docs = list(col.find().sort([("created_at", -1)]).limit(limit))
+    return serialize_mongo_doc(docs)
+
+async def get_whatsapp_notification_settings() -> Dict[str, bool]:
+    """Retrieves AI notification preferences for WhatsApp dispatcher."""
+    configs = await get_all_system_config()
+    return {
+        "notify_invoice_ingestion": str(configs.get("notify_invoice_ingestion", "true")).lower() == "true",
+        "notify_overdue_reminders": str(configs.get("notify_overdue_reminders", "true")).lower() == "true",
+        "notify_circuit_breaker": str(configs.get("notify_circuit_breaker", "true")).lower() == "true",
+        "notify_approval_resolution": str(configs.get("notify_approval_resolution", "true")).lower() == "true",
+        "notify_workflow_completion": str(configs.get("notify_workflow_completion", "true")).lower() == "true",
+        "notify_workflow_failure": str(configs.get("notify_workflow_failure", "true")).lower() == "true",
+    }
+
+async def update_whatsapp_notification_settings(settings: Dict[str, Any]) -> Dict[str, bool]:
+    """Updates AI notification preferences for WhatsApp dispatcher."""
+    await update_multiple_system_configs(settings)
+    return await get_whatsapp_notification_settings()

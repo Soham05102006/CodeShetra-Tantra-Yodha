@@ -59,6 +59,7 @@ from agent_workflow import (
 )
 from webhooks.whatsapp import router as whatsapp_router
 from ecommerce_routes import router as ecommerce_router, seed_ecommerce_if_empty
+from whatsapp_routes import router as whatsapp_dispatcher_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -99,6 +100,7 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # Include Twilio WhatsApp router
 app.include_router(whatsapp_router)
+app.include_router(whatsapp_dispatcher_router)
 
 # Include E-Commerce Router (Side Module)
 app.include_router(ecommerce_router, prefix="/api/ecommerce", tags=["E-Commerce"])

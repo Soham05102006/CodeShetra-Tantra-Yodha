@@ -22,6 +22,7 @@ export default function Sidebar({ activeNav = 'Operational Hub', onNavSelect, pe
     { id: 'E-Commerce', label: t('ecommerce', 'E-Commerce'), icon: ShoppingBag, badge: 'STORE' },
     { id: 'Ledger & Invoices', label: t('ledgerInvoices', 'Ledger & Invoices'), icon: FileText },
     { id: 'Vernacular Calls', label: t('vernacularCalls', 'Vernacular Calls'), icon: PhoneCall },
+    { id: 'WhatsApp Dispatcher', label: t('whatsappDispatcher', 'WhatsApp Dispatcher'), icon: MessageCircle, badge: 'FREE' },
     { id: 'Approval Queue', label: t('approvalQueue', 'Approval Queue'), icon: Clock, badge: pendingApprovalCount > 0 ? pendingApprovalCount : null },
     { id: 'Audit Logs', label: t('auditLogs', 'Audit Logs'), icon: Terminal },
     { id: 'Party Directory', label: t('partyDirectory', 'Party Directory'), icon: Users },

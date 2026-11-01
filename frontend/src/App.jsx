@@ -14,6 +14,7 @@ import AuditLogs from './components/AuditLogs';
 import PartyDirectory from './components/PartyDirectory';
 import Configuration from './components/Configuration';
 import EcommerceModule from './components/EcommerceModule';
+import WhatsAppDashboard from './components/WhatsAppDashboard';
 import { 
   PhoneCall, 
   CheckCircle2, 
@@ -362,6 +363,8 @@ export default function App() {
             <VernacularCalls 
               onTriggerVoice={(inv) => handleTriggerVoice(inv)}
             />
+          ) : activeNav === 'WhatsApp Dispatcher' ? (
+            <WhatsAppDashboard />
           ) : activeNav === 'Approval Queue' ? (
             <ApprovalQueue 
               onResolveApproval={handleResolveApproval}

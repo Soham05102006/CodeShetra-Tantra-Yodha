@@ -55,3 +55,11 @@ Thumbs.db
 *.sw?
 *.swp
 *.swo
+
+
+# WhatsApp Service
+whatsapp-service/.env
+whatsapp-service/.env.*
+!whatsapp-service/.env.example
+whatsapp-service/auth_info/
+**/auth_info/

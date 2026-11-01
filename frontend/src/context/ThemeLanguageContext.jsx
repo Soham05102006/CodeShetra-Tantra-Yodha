@@ -13,6 +13,7 @@ export const translations = {
     ecommerce: 'E-Commerce',
     ledgerInvoices: 'Ledger & Invoices',
     vernacularCalls: 'Vernacular Calls',
+    whatsappDispatcher: 'WhatsApp Dispatcher',
     approvalQueue: 'Approval Queue',
     auditLogs: 'Audit Logs',
     partyDirectory: 'Party Directory',

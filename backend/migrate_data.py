@@ -28,6 +28,46 @@ from seed_data import SEED_RECORDS
 DB_PATH = os.path.join(BASE_DIR, "data", "app.db")
 
 # Static Vernacular Voice Calls Dataset (previously hardcoded in main.py & VernacularCalls.jsx)
+
+SEED_WHATSAPP_MESSAGES = [
+    {
+        "direction": "OUTBOUND",
+        "phone": "+91 98765 43210",
+        "message": "Namaste Sharma ji! Reminder from Sharma Enterprises: Invoice #INV-025 for ₹45,000.00 is overdue. Please settle via UPI or NEFT.",
+        "status": "SENT",
+        "message_id": "baileys-seed-001",
+        "timestamp": "2026-10-31T18:30:00Z",
+        "created_at": "2026-10-31T18:30:00Z"
+    },
+    {
+        "direction": "OUTBOUND",
+        "phone": "+91 98765 43210",
+        "message": "🚨 AI-01 CIRCUIT BREAKER: APPROVAL REQUIRED\nAction: File GSTR-3B Tax Challan of ₹8,100.00 for INV-025.\nReply 'APPROVE thread-8921a4' or 'REJECT thread-8921a4'.",
+        "status": "SENT",
+        "message_id": "baileys-seed-002",
+        "timestamp": "2026-10-31T18:35:00Z",
+        "created_at": "2026-10-31T18:35:00Z"
+    },
+    {
+        "direction": "INBOUND",
+        "phone": "+91 98765 43210",
+        "message": "APPROVE thread-8921a4",
+        "status": "RECEIVED",
+        "message_id": "baileys-seed-003",
+        "timestamp": "2026-10-31T18:36:12Z",
+        "created_at": "2026-10-31T18:36:12Z"
+    },
+    {
+        "direction": "OUTBOUND",
+        "phone": "+91 98765 43210",
+        "message": "✓ AI-01 Circuit Breaker: Action GST_CHALLAN_FILING has been APPROVED! Autonomous execution is resuming.",
+        "status": "SENT",
+        "message_id": "baileys-seed-004",
+        "timestamp": "2026-10-31T18:36:15Z",
+        "created_at": "2026-10-31T18:36:15Z"
+    }
+]
+
 SEED_VOICE_CALLS = [
     {
         "id": "call-001",
@@ -446,6 +486,29 @@ def migrate_data() -> Dict[str, Any]:
             report["total_errors"] += 1
 
     report["collections"]["voice_calls"] = c_stats
+
+    # 7. Migrate whatsapp_messages
+    wm_col = db["whatsapp_messages"]
+    report["total_dummy_identified"] += len(SEED_WHATSAPP_MESSAGES)
+    wm_stats = {"identified": len(SEED_WHATSAPP_MESSAGES), "migrated": 0, "existing": 0, "errors": 0}
+
+    for msg in SEED_WHATSAPP_MESSAGES:
+        mid = msg["message_id"]
+        try:
+            existing = wm_col.find_one({"message_id": mid})
+            if existing:
+                wm_stats["existing"] += 1
+                report["total_already_existing"] += 1
+            else:
+                wm_col.update_one({"message_id": mid}, {"$setOnInsert": msg}, upsert=True)
+                wm_stats["migrated"] += 1
+                report["total_migrated"] += 1
+        except Exception as e:
+            logger.error(f"Error migrating whatsapp message {mid}: {e}")
+            wm_stats["errors"] += 1
+            report["total_errors"] += 1
+
+    report["collections"]["whatsapp_messages"] = wm_stats
 
     return report
 
