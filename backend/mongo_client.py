@@ -65,7 +65,7 @@ class MongoManager:
         target_uri = uri or os.getenv("MONGODB_URI") or MONGODB_URI
         target_db = db_name or os.getenv("DATABASE_NAME") or DATABASE_NAME or "ai01_db"
 
-        if not target_uri or "<username>" in target_uri:
+        if not target_uri or "<username>" in target_uri or os.getenv("USE_MOCK_DB") == "true" or target_uri == "mock":
             logger.info("MONGODB_URI is unconfigured. Activating in-memory mock database.")
             return self._init_mock(target_db)
 

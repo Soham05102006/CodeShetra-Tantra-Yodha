@@ -448,7 +448,7 @@ export default function VernacularCalls({ onTriggerVoice }) {
       )}
 
       {/* 1. Top Summary Metric Cards (Exact match to screenshot) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Card 1: Total Calls Placed */}
         <div className="bg-[#111622] border border-[#1d2538] rounded-2xl p-4 shadow-sm relative">
           <div className="text-xs text-slate-400 font-medium mb-1">
@@ -614,7 +614,7 @@ export default function VernacularCalls({ onTriggerVoice }) {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs min-w-[650px]">
               <thead>
                 <tr className="border-b border-[#1c2436] text-[11px] text-slate-400 font-medium">
                   <th className="py-2.5 font-normal">Contact / Business</th>
@@ -1108,7 +1108,7 @@ export default function VernacularCalls({ onTriggerVoice }) {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[#111622] border border-[#1d2538] rounded-2xl p-6 max-w-lg w-full shadow-2xl relative"
+              className="bg-[#111622] border border-[#1d2538] rounded-2xl p-4 sm:p-6 max-w-lg w-full max-h-[92vh] overflow-y-auto shadow-2xl relative"
             >
               <button
                 onClick={() => setIsManualModalOpen(false)}

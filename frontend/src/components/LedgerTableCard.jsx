@@ -47,9 +47,9 @@ export default function LedgerTableCard({
   ];
 
   return (
-    <div className="bg-[#111622] border border-[#1d2538] rounded-2xl p-4 shadow-sm flex flex-col">
+    <div className="bg-[#111622] border border-[#1d2538] rounded-2xl p-3.5 sm:p-4 shadow-sm flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2">
           <h3 className="text-xs font-bold tracking-wider text-slate-200 uppercase">
             {t('ledgerOutgoingComm', 'LEDGER & OUTGOING COMM')}
@@ -88,7 +88,7 @@ export default function LedgerTableCard({
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs">
+        <table className="w-full text-left text-xs min-w-[640px]">
           <thead>
             <tr className="border-b border-[#1c2436] text-[11px] text-slate-400 font-medium">
               <th className="py-2.5 font-normal">{t('partyCustomer', 'Party / Customer')}</th>

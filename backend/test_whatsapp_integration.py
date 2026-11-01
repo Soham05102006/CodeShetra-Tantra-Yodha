@@ -17,6 +17,7 @@ Tests:
 
 import asyncio
 import os
+os.environ['USE_MOCK_DB'] = 'true'
 import sys
 import unittest
 from unittest.mock import patch, AsyncMock, MagicMock

@@ -51,7 +51,7 @@ export default function ApprovalModal({
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
       onClick={(e) => {
         if (e.target === e.currentTarget && onClose) onClose();
       }}
@@ -60,7 +60,7 @@ export default function ApprovalModal({
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.9, opacity: 0, y: 20 }}
-        className="max-w-xl w-full bg-slate-900 border border-amber-500/40 rounded-2xl p-6 shadow-2xl shadow-amber-500/10 relative overflow-hidden"
+        className="max-w-xl w-full max-h-[92vh] overflow-y-auto bg-slate-900 border border-amber-500/40 rounded-2xl p-4 sm:p-6 shadow-2xl shadow-amber-500/10 relative"
       >
         {/* Top-Right Dismiss Button */}
         {onClose && (
@@ -135,7 +135,7 @@ export default function ApprovalModal({
         </div>
 
         {/* Quick Action Simulation Buttons */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
           <button
             onClick={() => handleSimulateReply('REJECTED')}
             disabled={isResolving}

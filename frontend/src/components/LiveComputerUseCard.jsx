@@ -59,7 +59,7 @@ export default function LiveComputerUseCard({
   return (
     <div className="bg-[#111622] border border-[#1d2538] rounded-2xl p-4 shadow-sm flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2">
           <h3 className="text-xs font-bold tracking-wider text-slate-200 uppercase">
             {t('liveAgentComputerUse', 'LIVE AGENT COMPUTER-USE')}
@@ -131,7 +131,7 @@ export default function LiveComputerUseCard({
           <span className="text-slate-600 text-xs">+</span>
 
           {/* URL Address Bar */}
-          <div className="flex-1 max-w-md mx-auto bg-[#0d121c] rounded-md px-2.5 py-1 text-[11px] font-mono text-slate-400 flex items-center gap-1.5 border border-[#1e273a] truncate">
+          <div className="flex-1 max-w-[160px] sm:max-w-md mx-auto bg-[#0d121c] rounded-md px-2 py-1 text-[10px] sm:text-[11px] font-mono text-slate-400 flex items-center gap-1.5 border border-[#1e273a] truncate">
             <Lock className="w-3 h-3 text-emerald-400" />
             <span className="truncate">virtual.browser.com/screenshot/GST_Return_Oct_2026</span>
           </div>
@@ -237,7 +237,7 @@ export default function LiveComputerUseCard({
           )}
 
           {/* Floating Action Log Bubble */}
-          <div className="absolute top-4 right-4 bg-[#111724]/95 border border-slate-700/80 rounded-xl p-3 shadow-2xl backdrop-blur-md text-xs max-w-xs pointer-events-none z-10">
+          <div className="absolute top-2 sm:top-4 right-2 sm:right-4 bg-[#111724]/95 border border-slate-700/80 rounded-xl p-2 sm:p-3 shadow-2xl backdrop-blur-md text-[10px] sm:text-xs max-w-[190px] sm:max-w-xs pointer-events-none z-10">
             <div className="font-semibold text-slate-200">
               {t(displayedStep?.reasoning || currentReasoning || currentAction, displayedStep?.reasoning || currentReasoning || currentAction)}
             </div>

@@ -265,7 +265,7 @@ export default function AuditLogs() {
       </div>
 
       {/* 2. TOP SUMMARY METRIC CARDS (4 CARDS) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Metric 1 */}
         <div className="relative overflow-hidden rounded-xl bg-[#0f1623]/80 border border-slate-800/80 p-4 shadow-lg backdrop-blur-md hover:border-slate-700 transition-all">
           <div className="flex items-center justify-between text-slate-400 mb-2">
@@ -676,7 +676,7 @@ export default function AuditLogs() {
       ) : (
         /* TABULAR DATA TABLE VIEW */
         <div className="rounded-xl bg-[#0d131f]/90 border border-slate-800 p-4 shadow-xl backdrop-blur-md overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-300">
+          <table className="w-full text-left text-xs text-slate-300 min-w-[750px]">
             <thead>
               <tr className="border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px] font-bold">
                 <th className="py-3 px-3">Timestamp</th>

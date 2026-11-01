@@ -254,13 +254,13 @@ export default function WhatsAppDashboard() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Top Banner Header */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-[#0e1626] via-[#121c33] to-[#0e1626] border border-sky-900/40 relative overflow-hidden shadow-xl">
+      <div className="p-4 sm:p-6 rounded-2xl bg-gradient-to-r from-[#0e1626] via-[#121c33] to-[#0e1626] border border-sky-900/40 relative overflow-hidden shadow-xl">
         <div className="absolute top-0 right-0 w-80 h-full bg-gradient-to-l from-emerald-500/10 to-transparent pointer-events-none" />
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div className="space-y-1.5">
-            <div className="flex items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
                 <MessageCircle className="w-5 h-5" />
               </div>
@@ -279,7 +279,7 @@ export default function WhatsAppDashboard() {
           </div>
 
           {/* Quick Connection Badge */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <div className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl border text-xs font-semibold backdrop-blur-md ${
               connectionStatus === 'connected'
                 ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-300'
@@ -316,7 +316,7 @@ export default function WhatsAppDashboard() {
         <div className="lg:col-span-7 space-y-6">
 
           {/* 1. WhatsApp Connection Card */}
-          <div className="p-5 rounded-2xl bg-[#0e1422] border border-[#1a2538] shadow-lg relative">
+          <div className="p-4 sm:p-5 rounded-2xl bg-[#0e1422] border border-[#1a2538] shadow-lg relative">
             <div className="flex items-center justify-between pb-4 border-b border-slate-800/80">
               <div className="flex items-center gap-2.5">
                 <Smartphone className="w-4 h-4 text-sky-400" />
@@ -402,7 +402,7 @@ export default function WhatsAppDashboard() {
           </div>
 
           {/* 2. Message Dispatcher Form */}
-          <div className="p-5 rounded-2xl bg-[#0e1422] border border-[#1a2538] shadow-lg space-y-4">
+          <div className="p-4 sm:p-5 rounded-2xl bg-[#0e1422] border border-[#1a2538] shadow-lg space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
               <div className="flex items-center gap-2.5">
                 <Send className="w-4 h-4 text-sky-400" />
@@ -518,7 +518,7 @@ export default function WhatsAppDashboard() {
         <div className="lg:col-span-5 space-y-6">
 
           {/* 3. AI Notification Triggers (Toggles) */}
-          <div className="p-5 rounded-2xl bg-[#0e1422] border border-[#1a2538] shadow-lg space-y-4">
+          <div className="p-4 sm:p-5 rounded-2xl bg-[#0e1422] border border-[#1a2538] shadow-lg space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
               <div className="flex items-center gap-2.5">
                 <Bell className="w-4 h-4 text-sky-400" />
@@ -619,7 +619,7 @@ export default function WhatsAppDashboard() {
           </div>
 
           {/* 4. Message History Stream */}
-          <div className="p-5 rounded-2xl bg-[#0e1422] border border-[#1a2538] shadow-lg space-y-4">
+          <div className="p-4 sm:p-5 rounded-2xl bg-[#0e1422] border border-[#1a2538] shadow-lg space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-sky-400" />

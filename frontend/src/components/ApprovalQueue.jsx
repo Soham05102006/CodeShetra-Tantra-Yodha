@@ -317,7 +317,7 @@ export default function ApprovalQueue({ onResolveApproval }) {
       </div>
 
       {/* 1. Top Summary Metric Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Card 1: Pending Approvals (Amber Alert) */}
         <div className="bg-[#101726] border-2 border-amber-500/80 rounded-2xl p-4 shadow-lg shadow-amber-500/10 relative overflow-hidden">
           <div className="text-xs text-slate-400 font-medium mb-1 flex items-center justify-between">
@@ -709,7 +709,7 @@ export default function ApprovalQueue({ onResolveApproval }) {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs min-w-[650px]">
             <thead>
               <tr className="border-b border-[#1c2436] text-[11px] text-slate-400 font-medium">
                 <th className="py-2.5 font-normal">Thread ID</th>
@@ -773,7 +773,7 @@ export default function ApprovalQueue({ onResolveApproval }) {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[#111622] border border-[#1d2538] rounded-2xl p-6 max-w-2xl w-full shadow-2xl relative"
+              className="bg-[#111622] border border-[#1d2538] rounded-2xl p-4 sm:p-6 max-w-2xl w-full max-h-[92vh] overflow-y-auto shadow-2xl relative"
             >
               <button
                 onClick={() => setInspectModalOpen(false)}

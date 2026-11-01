@@ -258,7 +258,7 @@ export default function LedgerAndInvoices({
       )}
 
       {/* 1. Top Summary Metric Cards (Exact match to prompt & screenshot) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Card 1: Total Invoiced (Electric Blue Highlight) */}
         <div className="bg-[#101726] border-2 border-blue-500 rounded-2xl p-4 shadow-lg shadow-blue-500/10 relative overflow-hidden">
           <div className="text-xs text-slate-400 font-medium mb-1">
@@ -443,7 +443,7 @@ export default function LedgerAndInvoices({
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs min-w-[720px]">
               <thead>
                 <tr className="border-b border-[#1c2436] text-[11px] text-slate-400 font-medium">
                   <th className="py-2.5 px-2 font-normal w-6">
@@ -889,7 +889,7 @@ export default function LedgerAndInvoices({
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[#111622] border border-[#1d2538] rounded-2xl p-6 max-w-lg w-full shadow-2xl relative"
+              className="bg-[#111622] border border-[#1d2538] rounded-2xl p-4 sm:p-6 max-w-lg w-full max-h-[92vh] overflow-y-auto shadow-2xl relative"
             >
               <button
                 onClick={() => setIsUploadModalOpen(false)}
@@ -927,7 +927,7 @@ export default function LedgerAndInvoices({
                 <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                   Or Ingest Quick Sample Preset:
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                   <button
                     onClick={handleUploadSubmit}
                     disabled={isUploading}

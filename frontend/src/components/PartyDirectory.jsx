@@ -532,7 +532,7 @@ export default function PartyDirectory({ onTriggerVoice }) {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
+            <table className="w-full text-left text-xs text-slate-300 min-w-[650px]">
               <thead>
                 <tr className="border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px] font-bold">
                   <th className="py-2.5 px-3">Entity Name</th>
@@ -926,7 +926,7 @@ export default function PartyDirectory({ onTriggerVoice }) {
       {/* 5. ADD NEW PARTY MODAL */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="relative max-w-lg w-full bg-[#0e1420] border border-slate-700 rounded-2xl shadow-2xl p-6">
+          <div className="relative max-w-lg w-full max-h-[92vh] overflow-y-auto bg-[#0e1420] border border-slate-700 rounded-2xl shadow-2xl p-4 sm:p-6">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />

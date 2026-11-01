@@ -29,6 +29,7 @@ import {
 
 export default function App() {
   const [activeNav, setActiveNav] = useState('Operational Hub');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [workflowStatus, setWorkflowStatus] = useState('RUNNING WEB AUTOMATION');
   const [activeStep, setActiveStep] = useState(3); // 0: Ingest, 1: Reconcile, 2: Voice, 3: GST Filing, 4: Verify
   const [isRunning, setIsRunning] = useState(false);
@@ -303,6 +304,8 @@ export default function App() {
         activeNav={activeNav} 
         onNavSelect={handleNavSelect}
         pendingApprovalCount={pendingApprovals.length > 0 ? pendingApprovals.length : 1}
+        isMobileOpen={mobileMenuOpen}
+        onCloseMobile={() => setMobileMenuOpen(false)}
       />
 
       {/* 2. Main Right Area */}
@@ -315,12 +318,13 @@ export default function App() {
           onTriggerVoice={() => handleTriggerVoice()}
           onTriggerBrowserDemo={handleTriggerBrowserDemo}
           onResetDemo={handleResetDemo}
+          onToggleMobileMenu={() => setMobileMenuOpen((prev) => !prev)}
           isRunning={isRunning}
         />
 
         {/* Voice Call Toast Banner */}
         {voiceToast && (
-          <div className="mx-6 mt-4 p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/40 shadow-lg flex items-start justify-between gap-3 text-xs animate-in fade-in duration-300">
+          <div className="mx-3 sm:mx-6 mt-3 sm:mt-4 p-3 sm:p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/40 shadow-lg flex items-start justify-between gap-3 text-xs animate-in fade-in duration-300">
             <div className="flex items-start gap-2.5">
               <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 mt-0.5">
                 <PhoneCall className="w-4 h-4" />
@@ -349,7 +353,7 @@ export default function App() {
         )}
 
         {/* Dashboard Content */}
-        <main className="p-6 space-y-5 max-w-[1700px] w-full mx-auto">
+        <main className="p-3 sm:p-5 lg:p-6 space-y-4 sm:space-y-5 max-w-[1700px] w-full mx-auto">
           {activeNav === 'E-Commerce' ? (
             <EcommerceModule onTriggerVoice={handleTriggerVoice} />
           ) : activeNav === 'Ledger & Invoices' ? (

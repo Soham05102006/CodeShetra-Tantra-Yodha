@@ -6,12 +6,13 @@ import {
   PhoneCall, 
   Globe, 
   RotateCcw,
-  Sparkles,
-  Sun,
-  Moon,
-  Languages,
-  ChevronDown,
-  Check
+  Sparkles, 
+  Sun, 
+  Moon, 
+  Languages, 
+  ChevronDown, 
+  Check,
+  Menu
 } from 'lucide-react';
 import { useAppTheme, useAppLanguage } from '../context/ThemeLanguageContext.jsx';
 
@@ -22,6 +23,7 @@ export default function TopBar({
   onTriggerVoice,
   onTriggerBrowserDemo,
   onResetDemo,
+  onToggleMobileMenu,
   isRunning = false
 }) {
   const { theme, toggleTheme, isDark } = useAppTheme();
@@ -49,36 +51,51 @@ export default function TopBar({
   const currentLang = languageOptions.find((l) => l.code === language) || languageOptions[0];
 
   return (
-    <header className="h-14 border-b border-[#1a2335] bg-[#0c1017] px-6 flex items-center justify-between select-none shrink-0 z-30 transition-colors">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-xs">
-        <span className="text-slate-500">{t('dashboard', 'Dashboard')}</span>
-        <span className="text-slate-600">/</span>
-        <span className="text-slate-200 font-semibold">{t(activeNav, activeNav)}</span>
+    <header className="h-14 border-b border-[#1a2335] bg-[#0c1017] px-3 sm:px-6 flex items-center justify-between select-none shrink-0 z-30 transition-colors">
+      {/* Left: Mobile Menu Toggle + Breadcrumb */}
+      <div className="flex items-center gap-2 min-w-0">
+        {/* Mobile Hamburger Menu Toggle */}
+        <button
+          onClick={onToggleMobileMenu}
+          className="lg:hidden p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-[#131926] border border-transparent hover:border-[#1e273a] transition-all shrink-0 cursor-pointer"
+          title="Open Navigation"
+          aria-label="Toggle navigation drawer"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-1.5 text-xs min-w-0">
+          <span className="text-slate-500 hidden sm:inline">{t('dashboard', 'Dashboard')}</span>
+          <span className="text-slate-600 hidden sm:inline">/</span>
+          <span className="text-slate-200 font-semibold truncate max-w-[130px] sm:max-w-none">
+            {t(activeNav, activeNav)}
+          </span>
+        </div>
       </div>
 
-      {/* Action Buttons & Controls */}
-      <div className="flex items-center gap-2.5">
+      {/* Right: Action Buttons & Controls */}
+      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
         {/* Quick Action: Voice Call */}
         <button
           onClick={onTriggerVoice}
           disabled={isRunning}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 bg-[#131926] hover:bg-[#1c2436] hover:text-white border border-[#1e273a] transition-all disabled:opacity-50 cursor-pointer"
+          className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 bg-[#131926] hover:bg-[#1c2436] hover:text-white border border-[#1e273a] transition-all disabled:opacity-50 cursor-pointer"
           title="Trigger Vernacular Hindi/Hinglish Debt Recovery Call"
         >
-          <PhoneCall className="w-3.5 h-3.5 text-emerald-400" />
-          <span className="hidden sm:inline">{t('voiceDispatch', 'Voice Dispatch')}</span>
+          <PhoneCall className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+          <span className="hidden md:inline">{t('voiceDispatch', 'Voice Dispatch')}</span>
         </button>
 
         {/* Quick Action: Portal Automation */}
         <button
           onClick={onTriggerBrowserDemo}
           disabled={isRunning}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 bg-[#131926] hover:bg-[#1c2436] hover:text-white border border-[#1e273a] transition-all disabled:opacity-50 cursor-pointer"
+          className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 bg-[#131926] hover:bg-[#1c2436] hover:text-white border border-[#1e273a] transition-all disabled:opacity-50 cursor-pointer"
           title="Directly Launch Playwright Visual Portal Automation"
         >
-          <Globe className="w-3.5 h-3.5 text-sky-400" />
-          <span className="hidden sm:inline">{t('portalAutomation', 'Portal Automation')}</span>
+          <Globe className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+          <span className="hidden md:inline">{t('portalAutomation', 'Portal Automation')}</span>
         </button>
 
         {/* Quick Action: Reset Demo */}
@@ -87,21 +104,19 @@ export default function TopBar({
           className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 bg-[#131926] hover:bg-[#1c2436] border border-[#1e273a] transition-all cursor-pointer"
           title={t('resetDemo', 'Reset Demo')}
         >
-          <RotateCcw className="w-4 h-4" />
+          <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </button>
 
-        <div className="h-4 w-[1px] bg-[#1e273a] mx-1"></div>
+        <div className="h-4 w-[1px] bg-[#1e273a] mx-0.5 sm:mx-1 hidden xs:block"></div>
 
-        {/* ========================================================
-            1. LANGUAGE SELECTOR (English, Hindi, Marathi)
-            ======================================================== */}
+        {/* Language Selector */}
         <div className="relative" ref={langMenuRef}>
           <button
             onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-[#131926] hover:bg-[#1c2436] text-slate-300 border border-[#1e273a] transition-all cursor-pointer"
-            title="Change Interface Language (English / हिन्दी / मराठी)"
+            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-medium bg-[#131926] hover:bg-[#1c2436] text-slate-300 border border-[#1e273a] transition-all cursor-pointer"
+            title="Change Interface Language"
           >
-            <Languages className="w-3.5 h-3.5 text-sky-400" />
+            <Languages className="w-3.5 h-3.5 text-sky-400 shrink-0" />
             <span className="font-semibold text-[11px]">{currentLang.short}</span>
             <ChevronDown className="w-3 h-3 text-slate-400" />
           </button>
@@ -135,22 +150,18 @@ export default function TopBar({
           )}
         </div>
 
-        {/* ========================================================
-            2. THEME TOGGLE (Dark Mode / Light Mode)
-            ======================================================== */}
+        {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
           className="p-1.5 rounded-lg text-slate-300 hover:text-white bg-[#131926] hover:bg-[#1c2436] border border-[#1e273a] transition-all cursor-pointer"
           title={isDark ? t('lightMode', 'Switch to Light Mode') : t('darkMode', 'Switch to Dark Mode')}
         >
           {isDark ? (
-            <Sun className="w-4 h-4 text-amber-400 hover:rotate-45 transition-transform" />
+            <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 hover:rotate-45 transition-transform" />
           ) : (
-            <Moon className="w-4 h-4 text-sky-400 hover:-rotate-12 transition-transform" />
+            <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400 hover:-rotate-12 transition-transform" />
           )}
         </button>
-
-        <div className="h-4 w-[1px] bg-[#1e273a] mx-1"></div>
 
         {/* Notification Icon */}
         <button 
@@ -158,7 +169,7 @@ export default function TopBar({
           className="relative p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-[#131926] transition-all cursor-pointer"
           title={t('notifications', 'View Pending Circuit Breaker Approvals')}
         >
-          <Bell className="w-4 h-4" />
+          <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-amber-400 ring-2 ring-[#0c1017]"></span>
         </button>
 
@@ -168,11 +179,11 @@ export default function TopBar({
           className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-[#131926] transition-all cursor-pointer"
           title={t('settings', 'Settings & Integrations')}
         >
-          <Settings className="w-4 h-4" />
+          <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </button>
 
         {/* Profile Avatar */}
-        <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-slate-700 to-indigo-600 border border-slate-600 flex items-center justify-center text-xs font-semibold text-white ml-1">
+        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-tr from-slate-700 to-indigo-600 border border-slate-600 flex items-center justify-center text-[10px] sm:text-xs font-semibold text-white ml-0.5 sm:ml-1 shrink-0">
           S
         </div>
       </div>
