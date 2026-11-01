@@ -19,7 +19,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, '.env') });
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.WHATSAPP_SERVICE_PORT || 3001;
 const SERVICE_TOKEN = process.env.WHATSAPP_SERVICE_TOKEN || 'ai01_whatsapp_secret_2026';
 const FASTAPI_WEBHOOK_URL = process.env.FASTAPI_WEBHOOK_URL || 'http://127.0.0.1:8000/api/whatsapp/incoming';
 const AUTH_DIR = path.resolve(__dirname, process.env.AUTH_DIR || './auth_info');

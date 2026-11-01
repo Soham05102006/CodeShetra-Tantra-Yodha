@@ -60,6 +60,13 @@ from agent_workflow import (
 from webhooks.whatsapp import router as whatsapp_router
 from ecommerce_routes import router as ecommerce_router, seed_ecommerce_if_empty
 from whatsapp_routes import router as whatsapp_dispatcher_router
+from livekit_routes import router as livekit_router
+from auth_routes import router as auth_router
+from retell_routes import router as retell_router
+from services.retell_service import get_retell_status
+from services.voice_provider import get_voice_provider
+from services.auth_service import ensure_default_admin
+from services.livekit_service import get_livekit_status
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -71,6 +78,7 @@ async def lifespan(app: FastAPI):
         logger.info(f"Lifespan: MongoDB Atlas initialized. Baseline records verified: {rep.get('total_already_existing', 0)} existing, {rep.get('total_migrated', 0)} newly migrated.")
         # Ensure E-Commerce collections and indexes are initialized
         seed_ecommerce_if_empty()
+        ensure_default_admin()
     except Exception as e:
         logger.error(f"[Lifespan Notice] MongoDB Atlas initialization error: {e}")
     yield
@@ -101,6 +109,9 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 # Include Twilio WhatsApp router
 app.include_router(whatsapp_router)
 app.include_router(whatsapp_dispatcher_router)
+app.include_router(livekit_router)
+app.include_router(auth_router)
+app.include_router(retell_router)
 
 # Include E-Commerce Router (Side Module)
 app.include_router(ecommerce_router, prefix="/api/ecommerce", tags=["E-Commerce"])
@@ -389,10 +400,11 @@ class VoiceTriggerRequest(BaseModel):
     amount_due: float
 
 @app.post("/api/voice/trigger")
-async def trigger_voice_call(req: VoiceTriggerRequest):
-    res = await voice_dispatcher.dispatch_call(
+async def trigger_voice_call(req: VoiceTriggerRequest, provider: Optional[str] = None):
+    prov = get_voice_provider(provider)
+    res = await prov.initiate_call(
+        to_number=req.phone_number,
         customer_name=req.customer_name,
-        phone_number=req.phone_number,
         invoice_number=req.invoice_number,
         amount_due=req.amount_due,
         thread_id="manual-voice-call"
@@ -954,6 +966,8 @@ async def test_api_connections(req: TestApiRequest):
             "quota_status": "Active Sandbox (Balance: $14.50)",
             "phone_masked": "+91 98XXX XXXXX"
         },
+        "livekit": get_livekit_status(),
+        "retell": get_retell_status(),
         "vapi": {
             "name": "Vapi.ai Outbound Voice",
             "status": "CONNECTED",

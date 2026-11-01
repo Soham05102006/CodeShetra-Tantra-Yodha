@@ -468,7 +468,13 @@ export default function Configuration() {
                   <div className="text-[11px] text-slate-400 mt-0.5">{item.quota_status || 'Operational'}</div>
                 </div>
                 <div className="text-right">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                    item.status === 'CONNECTED'
+                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                      : item.status === 'PARTIALLY_CONFIGURED'
+                      ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                      : 'bg-slate-800 text-slate-400 border border-slate-700'
+                  }`}>
                     <Check className="w-3 h-3" /> {item.status}
                   </span>
                   <div className="text-[10px] text-sky-400 font-mono mt-0.5">{item.latency}</div>
@@ -739,6 +745,42 @@ export default function Configuration() {
                   onChange={(e) => setConfig(prev => ({ ...prev, fallback_language: e.target.value }))}
                   className="bg-[#0c1017] text-slate-200 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 focus:outline-none focus:border-sky-500 sm:w-64"
                 />
+              </div>
+
+              {/* LiveKit Cloud WebRTC Audio & Video */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-[#121827] border border-slate-800">
+                <div>
+                  <div className="text-xs font-semibold text-slate-200 flex items-center gap-2">
+                    <span>LiveKit WebRTC Cloud Audio & Video</span>
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                      CONNECTED
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                    wss://ai-native-business-agent-pallot-lyz298ei.livekit.cloud
+                  </div>
+                </div>
+                <span className="text-[10px] text-sky-400 font-mono bg-sky-500/10 px-2 py-1 rounded border border-sky-500/20">
+                  Key: APIt****MA4Q
+                </span>
+              </div>
+
+              {/* Retell AI Outbound Telephony */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-[#121827] border border-slate-800">
+                <div>
+                  <div className="text-xs font-semibold text-slate-200 flex items-center gap-2">
+                    <span>Retell AI Outbound Telephony</span>
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                      NOT CONFIGURED
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                    Carrier Outbound Calls, Real Transcripts & Webhooks
+                  </div>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono bg-slate-800/80 px-2 py-1 rounded border border-slate-700">
+                  Set RETELL_API_KEY in .env
+                </span>
               </div>
             </div>
           </div>

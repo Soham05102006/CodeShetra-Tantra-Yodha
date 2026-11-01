@@ -29,6 +29,7 @@ from database import (
     add_audit_log
 )
 from voice_dispatcher import voice_dispatcher
+from services.voice_provider import get_voice_provider, BaseVoiceProvider
 from browser_agent import run_gst_browser_automation
 from services.whatsapp import send_whatsapp, notify_owner_whatsapp, is_notification_enabled
 
@@ -50,6 +51,9 @@ class WorkflowState(TypedDict):
     execution_status: str
     screenshots: List[Dict[str, Any]]
     sent_notifications: List[str]
+    call_failed: Optional[bool]
+    call_error: Optional[str]
+    call_provider: Optional[str]
 
 # Global WebSocket/SSE broadcaster callback
 _broadcasters: List[Any] = []
@@ -155,18 +159,38 @@ async def reconcile_ledger_node(state: WorkflowState) -> Dict[str, Any]:
 # --- NODE 3: Dispatch Vernacular Voice Call ---
 async def dispatch_voice_call_node(state: WorkflowState) -> Dict[str, Any]:
     thread_id = state["thread_id"]
-    call_result = await voice_dispatcher.dispatch_call(
+    provider = get_voice_provider()
+
+    call_result = await provider.initiate_call(
+        to_number=state["phone_number"],
         customer_name=state["entity_name"],
-        phone_number=state["phone_number"],
         invoice_number=state["invoice_number"],
         amount_due=state["amount_due"],
         thread_id=thread_id
     )
 
+    # If phone call failed, conditionally stop downstream tax filing
+    if not call_result.get("success"):
+        err = call_result.get("error") or "Voice call attempt was rejected or failed."
+        await add_audit_log(
+            thread_id=thread_id,
+            step_name="voice_call_attempt_failed",
+            agent_reasoning=f"Voice call dispatch via {provider.provider_name} failed: {err}. Halting execution before GST Challan filing.",
+            tool_used=f"{provider.provider_name}-Voice-Engine",
+            execution_status="FAILED"
+        )
+        return {
+            "call_failed": True,
+            "call_error": err,
+            "call_provider": provider.provider_name,
+            "execution_status": "VOICE_CALL_FAILED"
+        }
+
     await notify_broadcasters("voice_call", {
         "thread_id": thread_id,
         "transcript": call_result.get("transcript"),
-        "promised_date": call_result.get("promised_payment_date")
+        "promised_date": call_result.get("promised_payment_date"),
+        "provider": provider.provider_name
     })
 
     # AI WhatsApp Notification: Overdue Payment Reminder to Recipient
@@ -190,8 +214,50 @@ async def dispatch_voice_call_node(state: WorkflowState) -> Dict[str, Any]:
     return {
         "promised_payment_date": call_result.get("promised_payment_date"),
         "call_transcript": call_result.get("transcript"),
+        "call_failed": False,
+        "call_provider": provider.provider_name,
         "sent_notifications": sent_notes,
         "execution_status": "VOICE_CALL_COMPLETED"
+    }
+
+# --- RECOVERY NODE: Call Recovery Node (Halts downstream actions on call failure) ---
+async def call_recovery_node(state: WorkflowState) -> Dict[str, Any]:
+    thread_id = state["thread_id"]
+    err = state.get("call_error") or "Debtor phone call failed or unreachable."
+
+    await add_audit_log(
+        thread_id=thread_id,
+        step_name="call_recovery_halt",
+        agent_reasoning=(
+            f"RECOVERY CIRCUIT TRIGGERED: Voice contact with {state['entity_name']} failed ({err}). "
+            f"Downstream statutory GST filing and payments halted to protect business funds."
+        ),
+        tool_used="Voice-Circuit-Breaker",
+        execution_status="RECOVERY_HALTED"
+    )
+
+    await notify_broadcasters("call_failed", {
+        "thread_id": thread_id,
+        "error": err,
+        "invoice_number": state.get("invoice_number")
+    })
+
+    try:
+        await notify_owner_whatsapp(
+            f"⚠️ *AI-01 Alert: Voice Call Failed*\n"
+            f"Could not reach {state['entity_name']} ({state['phone_number']}) for #{state['invoice_number']}.\n"
+            f"Reason: {err}\n"
+            f"Statutory tax filing halted.",
+            notification_key="notify_workflow_failure",
+            thread_id=thread_id
+        )
+    except Exception as e:
+        print(f"[RecoveryWhatsApp] notice: {e}")
+
+    return {
+        "execution_status": "HALTED_CALL_FAILED",
+        "call_failed": True,
+        "call_error": err
     }
 
 # --- NODE 4: WhatsApp Approval Circuit Breaker ---
@@ -389,10 +455,25 @@ def build_agent_graph():
     graph.add_node("whatsapp_circuit_breaker", whatsapp_circuit_breaker_node)
     graph.add_node("browser_automation", browser_automation_node)
 
+    def route_after_voice_call(state: WorkflowState):
+        if state.get("call_failed"):
+            return "call_recovery"
+        return "whatsapp_circuit_breaker"
+
+    graph.add_node("call_recovery", call_recovery_node)
+
     graph.add_edge(START, "ingest_invoices")
     graph.add_edge("ingest_invoices", "reconcile_ledger")
     graph.add_edge("reconcile_ledger", "dispatch_voice_call")
-    graph.add_edge("dispatch_voice_call", "whatsapp_circuit_breaker")
+    graph.add_conditional_edges(
+        "dispatch_voice_call",
+        route_after_voice_call,
+        {
+            "call_recovery": "call_recovery",
+            "whatsapp_circuit_breaker": "whatsapp_circuit_breaker"
+        }
+    )
+    graph.add_edge("call_recovery", END)
     graph.add_edge("whatsapp_circuit_breaker", "browser_automation")
     graph.add_edge("browser_automation", END)
 

@@ -1,3 +1,5 @@
+import { useAuth } from '../context/AuthContext.jsx';
+import AuthModal from './AuthModal.jsx';
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Bell, 
@@ -29,6 +31,8 @@ export default function TopBar({
   const { theme, toggleTheme, isDark } = useAppTheme();
   const { language, setLanguage, t } = useAppLanguage();
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const { user, isAuthenticated } = useAuth();
   const langMenuRef = useRef(null);
 
   // Close dropdown on click outside
@@ -182,11 +186,27 @@ export default function TopBar({
           <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </button>
 
-        {/* Profile Avatar */}
-        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-tr from-slate-700 to-indigo-600 border border-slate-600 flex items-center justify-center text-[10px] sm:text-xs font-semibold text-white ml-0.5 sm:ml-1 shrink-0">
-          S
-        </div>
+        {/* Profile / Auth Avatar */}
+        <button
+          onClick={() => setAuthModalOpen(true)}
+          className="flex items-center gap-2 pl-2 cursor-pointer hover:opacity-90 transition"
+          title={isAuthenticated ? `Logged in as ${user?.full_name}` : "Click to Sign In"}
+        >
+          <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-cyan-600 to-indigo-600 border border-cyan-400/50 flex items-center justify-center text-xs font-bold text-white shadow-sm shadow-cyan-500/20">
+            {user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'S'}
+          </div>
+          <div className="hidden lg:flex flex-col text-left">
+            <span className="text-[11px] font-bold text-slate-200 leading-tight">
+              {user ? (user.full_name?.split(' ')[0] || user.username) : 'Sign In'}
+            </span>
+            <span className="text-[9px] font-mono text-cyan-400 leading-tight">
+              {user ? user.role : 'OPERATOR'}
+            </span>
+          </div>
+        </button>
       </div>
+
+      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </header>
   );
 }
