@@ -54,7 +54,7 @@ export default function TopBar({
       <div className="flex items-center gap-2 text-xs">
         <span className="text-slate-500">{t('dashboard', 'Dashboard')}</span>
         <span className="text-slate-600">/</span>
-        <span className="text-slate-200 font-semibold">{t(activeNav.replace(/[^a-zA-Z]/g, ''), activeNav)}</span>
+        <span className="text-slate-200 font-semibold">{t(activeNav, activeNav)}</span>
       </div>
 
       {/* Action Buttons & Controls */}

@@ -62,7 +62,7 @@ export default function MetricsRow({
             {t('pendingApprovals', 'Pending Approvals')}
           </div>
           <div className="text-xl font-bold font-mono text-slate-100 flex items-center gap-1.5">
-            <span>{pendingApprovals} Request{pendingApprovals !== 1 ? 's' : ''}</span>
+            <span>{pendingApprovals} {t('pendingActions', 'Requests')}</span>
           </div>
         </div>
         <div className="w-6 h-6 rounded-full bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400">

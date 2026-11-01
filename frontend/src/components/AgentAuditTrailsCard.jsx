@@ -1,7 +1,10 @@
 import React from 'react';
 import { Check, CheckCircle2, AlertTriangle, Loader2, Sparkles, AlertCircle } from 'lucide-react';
+import { useAppLanguage } from '../context/ThemeLanguageContext';
 
 export default function AgentAuditTrailsCard({ logs = [] }) {
+  const { t } = useAppLanguage();
+
   // Format real logs if available
   const formattedLogs = logs.length > 0 ? logs.slice(0, 5).map(log => {
     const timeStr = log.timestamp ? log.timestamp.split('T')[1]?.substring(0, 5) || log.timestamp.substring(11, 16) || '16:48' : '16:48';
@@ -97,7 +100,7 @@ export default function AgentAuditTrailsCard({ logs = [] }) {
       {/* Top Header */}
       <div>
         <h3 className="text-xs font-bold tracking-wider text-slate-200 uppercase mb-4">
-          AGENT AUDIT TRAILS (LIVE)
+          {t('autonomousAgentAuditTrails', 'AGENT AUDIT TRAILS (LIVE)')}
         </h3>
 
         {/* Timeline Items */}
@@ -116,7 +119,7 @@ export default function AgentAuditTrailsCard({ logs = [] }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wide ${trail.tagColor}`}>
-                    {trail.tag}
+                    {t(trail.tag, trail.tag)}
                   </span>
 
                   {trail.rightIcon ? (
@@ -129,7 +132,7 @@ export default function AgentAuditTrailsCard({ logs = [] }) {
                 </div>
 
                 <p className="text-slate-300 text-[11px] leading-relaxed">
-                  {trail.text}
+                  {t(trail.text, trail.text)}
                 </p>
               </div>
             </div>
@@ -146,13 +149,13 @@ export default function AgentAuditTrailsCard({ logs = [] }) {
 
           <div className="flex-1 min-w-0">
             <div className="text-[11px] font-bold text-slate-200 tracking-wide">
-              ACTION INTERRUPT - RESOLVED
+              {t('actionDetails', 'ACTION INTERRUPT - RESOLVED')}
             </div>
             <div className="text-[10px] text-slate-400 mt-0.5 leading-snug">
               Approval for GST submittted via WhatsApp (Thread: th-12041)
             </div>
             <div className="text-[10px] font-semibold text-emerald-400 mt-1">
-              Status: RESUMED
+              {t('status', 'Status')}: {t('MONTH-END CLOSE COMPLETE', 'RESUMED')}
             </div>
           </div>
 

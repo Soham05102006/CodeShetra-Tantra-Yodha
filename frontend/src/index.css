@@ -73,82 +73,198 @@ body {
   animation: ping-slow 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
-
 /* ========================================================
    LIGHT THEME OVERRIDES (Clean MSME Professional Slate)
+   "if the theam is done light everthing should be light except text"
    ======================================================== */
 body.light-theme {
   --bg-dark: #f8fafc;
-  --card-bg: rgba(255, 255, 255, 0.95);
-  --card-border: rgba(226, 232, 240, 0.9);
-  background-color: #f1f5f9;
-  color: #0f172a;
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
   color-scheme: light;
 }
 
-body.light-theme .bg-\[\#0c1017\],
-body.light-theme .bg-\[\#0B0F17\],
-body.light-theme .bg-\[\#0e131d\] {
+body.light-theme #root,
+body.light-theme main,
+body.light-theme .h-screen,
+body.light-theme .min-h-screen {
   background-color: #f8fafc !important;
-}
-
-body.light-theme .bg-\[\#111726\],
-body.light-theme .bg-\[\#131926\],
-body.light-theme .bg-\[\#161e31\] {
-  background-color: #ffffff !important;
-}
-
-body.light-theme .bg-\[\#1a233a\],
-body.light-theme .bg-\[\#1f2b45\],
-body.light-theme .bg-\[\#151c2e\],
-body.light-theme .bg-\[\#172136\] {
-  background-color: #f1f5f9 !important;
-}
-
-body.light-theme .border-\[\#1a2335\],
-body.light-theme .border-\[\#1e273c\],
-body.light-theme .border-\[\#222e47\],
-body.light-theme .border-\[\#1e273a\],
-body.light-theme .border-\[\#23314f\] {
-  border-color: #e2e8f0 !important;
-}
-
-body.light-theme .text-slate-100,
-body.light-theme .text-white {
   color: #0f172a !important;
 }
 
-body.light-theme .text-slate-200 {
-  color: #1e293b !important;
+/* 1. All dark backgrounds -> Crisp White / Soft Light Slate */
+body.light-theme [class*="bg-[#0"],
+body.light-theme [class*="bg-[#1"],
+body.light-theme [class*="bg-slate-950"],
+body.light-theme [class*="bg-slate-900"],
+body.light-theme [class*="bg-slate-850"] {
+  background-color: #ffffff !important;
 }
 
-body.light-theme .text-slate-300 {
-  color: #334155 !important;
+body.light-theme [class*="bg-[#0c"],
+body.light-theme [class*="bg-[#0b"],
+body.light-theme [class*="bg-[#0e"],
+body.light-theme [class*="bg-[#05"],
+body.light-theme [class*="bg-[#0a"],
+body.light-theme [class*="bg-slate-900/50"],
+body.light-theme [class*="bg-slate-900/70"],
+body.light-theme [class*="bg-slate-900/80"],
+body.light-theme [class*="bg-slate-900/90"] {
+  background-color: #f8fafc !important;
 }
 
-body.light-theme .text-slate-400 {
+body.light-theme [class*="bg-slate-800"],
+body.light-theme [class*="bg-slate-700"] {
+  background-color: #f1f5f9 !important;
+}
+
+/* Glass Panels and Cards */
+body.light-theme .glass-panel,
+body.light-theme .glass-panel-glow {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Header, Sidebar, Nav */
+body.light-theme aside,
+body.light-theme header,
+body.light-theme nav {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* 2. All Dark Borders -> Crisp Light Border */
+body.light-theme [class*="border-[#"],
+body.light-theme [class*="border-slate-8"],
+body.light-theme [class*="border-slate-7"],
+body.light-theme [class*="border-slate-9"] {
+  border-color: #e2e8f0 !important;
+}
+
+/* 3. "EXCEPT TEXT": High Contrast Dark Slate/Black Text */
+body.light-theme [class*="text-slate-1"],
+body.light-theme [class*="text-slate-2"],
+body.light-theme [class*="text-slate-3"],
+body.light-theme [class*="text-slate-50"],
+body.light-theme [class*="text-white"]:not(.text-white-forced) {
+  color: #0f172a !important;
+}
+
+/* Keep text on colored primary action buttons white */
+body.light-theme button[class*="bg-blue-6"],
+body.light-theme button[class*="bg-emerald-6"],
+body.light-theme button[class*="bg-rose-6"],
+body.light-theme button[class*="bg-teal-6"],
+body.light-theme button[class*="bg-purple-6"],
+body.light-theme button[class*="bg-indigo-6"],
+body.light-theme button[class*="from-blue-6"],
+body.light-theme button[class*="from-emerald-6"],
+body.light-theme .badge-colored,
+body.light-theme button[class*="bg-blue-6"] *,
+body.light-theme button[class*="bg-emerald-6"] *,
+body.light-theme button[class*="bg-rose-6"] *,
+body.light-theme button[class*="bg-teal-6"] *,
+body.light-theme button[class*="from-blue-6"] * {
+  color: #ffffff !important;
+}
+
+body.light-theme [class*="text-slate-4"] {
+  color: #475569 !important;
+}
+
+body.light-theme [class*="text-slate-5"] {
   color: #64748b !important;
 }
 
-body.light-theme .text-slate-500 {
+/* 4. Inputs, selects, and textareas */
+body.light-theme input,
+body.light-theme select,
+body.light-theme textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+body.light-theme input::placeholder,
+body.light-theme textarea::placeholder {
   color: #94a3b8 !important;
 }
 
-body.light-theme .glass-panel {
-  background: rgba(255, 255, 255, 0.95) !important;
-  border-color: rgba(203, 213, 225, 0.8) !important;
+/* 5. Modals and Overlays */
+body.light-theme .fixed .bg-slate-900,
+body.light-theme .fixed .bg-slate-950,
+body.light-theme [role="dialog"] {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
 }
 
-body.light-theme aside {
+/* 6. Dark translucent status tint overrides */
+body.light-theme [class*="bg-emerald-950"],
+body.light-theme [class*="bg-emerald-500/10"],
+body.light-theme [class*="bg-emerald-500/15"],
+body.light-theme [class*="bg-emerald-500/20"] {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+}
+
+body.light-theme [class*="bg-blue-950"],
+body.light-theme [class*="bg-sky-500/10"],
+body.light-theme [class*="bg-sky-500/15"],
+body.light-theme [class*="bg-sky-500/20"],
+body.light-theme [class*="bg-blue-500/15"] {
+  background-color: #f0f9ff !important;
+  border-color: #bae6fd !important;
+}
+
+body.light-theme [class*="bg-amber-950"],
+body.light-theme [class*="bg-amber-500/10"],
+body.light-theme [class*="bg-amber-500/15"],
+body.light-theme [class*="bg-amber-500/20"] {
+  background-color: #fffbeb !important;
+  border-color: #fde68a !important;
+}
+
+body.light-theme [class*="bg-rose-950"],
+body.light-theme [class*="bg-rose-500/10"],
+body.light-theme [class*="bg-rose-500/15"],
+body.light-theme [class*="bg-rose-500/20"] {
+  background-color: #fff1f2 !important;
+  border-color: #fecdd3 !important;
+}
+
+body.light-theme [class*="bg-purple-950"],
+body.light-theme [class*="bg-purple-500/10"] {
+  background-color: #faf5ff !important;
+  border-color: #e9d5ff !important;
+}
+
+/* 7. Scrollbars in light mode */
+body.light-theme ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+body.light-theme ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+body.light-theme ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* 8. Table Rows & Hover */
+body.light-theme table {
   background-color: #ffffff !important;
+}
+body.light-theme th {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
   border-color: #e2e8f0 !important;
 }
-
-body.light-theme header {
-  background-color: #ffffff !important;
+body.light-theme td {
+  color: #0f172a !important;
   border-color: #e2e8f0 !important;
 }
-
-body.light-theme table tr:hover {
+body.light-theme tr:hover td {
   background-color: #f8fafc !important;
 }

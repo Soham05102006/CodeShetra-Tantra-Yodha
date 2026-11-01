@@ -1,5 +1,6 @@
 import React from 'react';
 import { Check, Play, Pause, CircleDot, Circle } from 'lucide-react';
+import { useAppLanguage } from '../context/ThemeLanguageContext';
 
 export default function LiveWorkflowBar({ 
   workflowStatus = 'RUNNING WEB AUTOMATION',
@@ -9,12 +10,14 @@ export default function LiveWorkflowBar({
   onPause,
   onStepClick
 }) {
+  const { t } = useAppLanguage();
+
   const steps = [
-    { id: 'ingest', label: 'Invoice Ingest' },
-    { id: 'reconcile', label: 'Reconcile' },
-    { id: 'voice', label: 'Voice Follow-Up' },
-    { id: 'gst', label: 'GST Portal Filing' },
-    { id: 'verify', label: 'Verify' },
+    { id: 'ingest', label: t('invoiceIngest', 'Invoice Ingest') },
+    { id: 'reconcile', label: t('reconcile', 'Reconcile') },
+    { id: 'voice', label: t('voiceFollowUp', 'Voice Follow-Up') },
+    { id: 'gst', label: t('gstPortalFiling', 'GST Portal Filing') },
+    { id: 'verify', label: t('verify', 'Verify') },
   ];
 
   const getStatusColor = () => {
@@ -24,7 +27,7 @@ export default function LiveWorkflowBar({
     if (workflowStatus.includes('RUNNING')) {
       return 'bg-[#0284c7] hover:bg-sky-600 shadow-sky-500/25';
     }
-    if (workflowStatus.includes('COMPLETED')) {
+    if (workflowStatus.includes('COMPLETED') || workflowStatus.includes('COMPLETE')) {
       return 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/25';
     }
     return 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/25';
@@ -35,7 +38,7 @@ export default function LiveWorkflowBar({
       {/* Left Pipeline Flow */}
       <div className="min-w-0">
         <h2 className="text-sm font-semibold text-slate-100 mb-2.5">
-          Live Workflow: Month-End Close
+          {t('liveWorkflowMonthEnd', 'Live Workflow: Month-End Close')}
         </h2>
 
         {/* Stepper Steps */}
@@ -90,14 +93,14 @@ export default function LiveWorkflowBar({
       <div className="flex items-center gap-2.5 shrink-0 self-end md:self-center">
         {/* Status Pill Button */}
         <div className={`px-4 py-2.5 rounded-xl text-xs font-bold text-white tracking-wider uppercase shadow-md flex items-center gap-2 transition-all cursor-pointer ${getStatusColor()}`}>
-          <span>STATUS: {workflowStatus}</span>
+          <span>{t('status', 'STATUS')}: {t(workflowStatus, workflowStatus)}</span>
         </div>
 
         {/* Play Action */}
         <button
           onClick={onPlay}
           className="w-9 h-9 rounded-xl bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center transition-all shadow-md shadow-blue-600/30 active:scale-95"
-          title="Run Autonomous Cycle"
+          title={t('runAutonomousCycle', 'Run Autonomous Cycle')}
         >
           <Play className="w-4 h-4 fill-current ml-0.5" />
         </button>
@@ -106,7 +109,7 @@ export default function LiveWorkflowBar({
         <button
           onClick={onPause}
           className="w-9 h-9 rounded-xl bg-[#172030] hover:bg-[#1f2b40] text-slate-400 hover:text-white border border-[#232e44] flex items-center justify-center transition-all active:scale-95"
-          title="Pause Execution"
+          title={t('pauseExecution', 'Pause Execution')}
         >
           <Pause className="w-4 h-4 fill-current" />
         </button>

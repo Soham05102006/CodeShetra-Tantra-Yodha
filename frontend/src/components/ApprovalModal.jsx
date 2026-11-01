@@ -10,6 +10,7 @@ import {
   HelpCircle,
   FileCheck2
 } from 'lucide-react';
+import { useAppLanguage } from '../context/ThemeLanguageContext';
 
 export default function ApprovalModal({ 
   pendingApproval, 
@@ -17,6 +18,7 @@ export default function ApprovalModal({
   onClose,
   isResolving 
 }) {
+  const { t } = useAppLanguage();
   const [customReply, setCustomReply] = useState('');
 
   if (!pendingApproval) return null;
@@ -81,14 +83,14 @@ export default function ApprovalModal({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-mono uppercase tracking-wider text-amber-400 font-bold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-                LangGraph Human-In-The-Loop Interrupt
+                {t('langGraphInterrupt', 'LangGraph Human-In-The-Loop Interrupt')}
               </span>
             </div>
             <h2 className="text-lg font-bold text-white mt-1">
-              WhatsApp Circuit Breaker Triggered
+              {t('whatsappCircuitBreakerTriggered', 'WhatsApp Circuit Breaker Triggered')}
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Statutory GST portal submission paused pending business owner authorization.
+              {t('gstSubmissionPaused', 'Statutory GST portal submission paused pending business owner authorization.')}
             </p>
           </div>
         </div>
@@ -96,15 +98,15 @@ export default function ApprovalModal({
         {/* Action Description Box */}
         <div className="bg-slate-950/80 rounded-xl p-4 border border-slate-800 mb-4 text-xs space-y-2">
           <div className="flex justify-between items-center text-slate-300">
-            <span className="text-slate-400">Action Type:</span>
+            <span className="text-slate-400">{t('actionType', 'Action Type:')}</span>
             <span className="font-mono font-semibold text-sky-400">{pendingApproval.action_type}</span>
           </div>
           <div className="flex justify-between items-center text-slate-300">
-            <span className="text-slate-400">Target MSME:</span>
+            <span className="text-slate-400">{t('targetMsme', 'Target MSME:')}</span>
             <span className="font-semibold text-white">{payload.entity_name || 'Sharma Metal Works'}</span>
           </div>
           <div className="flex justify-between items-center text-slate-300">
-            <span className="text-slate-400">Tax Liability Amount:</span>
+            <span className="text-slate-400">{t('taxLiabilityAmount', 'Tax Liability Amount:')}</span>
             <span className="font-mono font-bold text-amber-400 text-sm">
               ₹{payload.tax_amount ? Number(payload.tax_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '8,100.00'}
             </span>
@@ -118,7 +120,7 @@ export default function ApprovalModal({
         <div className="bg-emerald-950/20 border border-emerald-500/25 rounded-xl p-3.5 mb-5">
           <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 mb-2">
             <Smartphone className="w-4 h-4" />
-            <span>Twilio WhatsApp Sandbox Gate</span>
+            <span>{t('twilioGate', 'Twilio WhatsApp Sandbox Gate')}</span>
             <span className="text-[10px] text-slate-400 ml-auto font-mono">Sandbox: +1 415 523 8886</span>
           </div>
 
@@ -137,19 +139,19 @@ export default function ApprovalModal({
           <button
             onClick={() => handleSimulateReply('REJECTED')}
             disabled={isResolving}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 transition-all disabled:opacity-50"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 transition-all disabled:opacity-50 cursor-pointer"
           >
             <X className="w-4 h-4" />
-            Reject & Abort
+            {t('rejectAbort', 'Reject & Abort')}
           </button>
 
           <button
             onClick={() => handleSimulateReply('APPROVED')}
             disabled={isResolving}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 shadow-lg shadow-emerald-500/20 border border-emerald-400/30 transition-all disabled:opacity-50"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 shadow-lg shadow-emerald-500/20 border border-emerald-400/30 transition-all disabled:opacity-50 cursor-pointer"
           >
             <Check className="w-4 h-4" />
-            Authorize via WhatsApp Gate
+            {t('authorizeWhatsappGate', 'Authorize via WhatsApp Gate')}
           </button>
         </div>
       </motion.div>

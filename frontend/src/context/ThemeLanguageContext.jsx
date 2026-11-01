@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Comprehensive Bilingual / Trilingual dictionary for English, Hindi, and Marathi
+// ============================================================================
+// COMPREHENSIVE TRILINGUAL DICTIONARY (English, Hindi, Marathi)
+// ============================================================================
 export const translations = {
   en: {
     // Navigation & Branding
@@ -33,11 +35,157 @@ export const translations = {
     // Hub Metrics & Stepper
     runningWebAutomation: 'RUNNING WEB AUTOMATION',
     awaitingApproval: 'AWAITING APPROVAL',
+    standbyReady: 'STANDBY / READY',
+    monthEndCloseComplete: 'MONTH-END CLOSE COMPLETE',
+    idlePaused: 'IDLE / PAUSED',
     totalInvoiced: 'Total Invoiced',
     unresolvedOverdue: 'Unresolved Overdue',
     completedCalls: 'Completed Calls',
     pendingApprovals: 'Pending Approvals',
+    pendingActions: 'Requests',
     liveBrowserAction: 'Executing Autonomous Playwright Browser Steps...',
+    receivablesThisCycle: 'Receivables this cycle',
+    actionableDebtors: 'Actionable debtors',
+    vernacularOutreach: 'Vernacular outreach',
+    circuitBreakerActive: 'Circuit breaker active',
+    viewQueue: 'View Queue',
+    records: 'Records',
+    today: 'Today',
+
+    // Stepper Steps
+    invoiceIngest: 'Invoice Ingest',
+    reconcile: 'Reconcile',
+    voiceFollowUp: 'Voice Follow-Up',
+    gstPortalFiling: 'GST Portal Filing',
+    verify: 'Verify',
+    liveWorkflowMonthEnd: 'Live Workflow: Month-End Close',
+    runAutonomousCycle: 'Run Autonomous Cycle',
+    pauseExecution: 'Pause Execution',
+    status: 'STATUS',
+
+    // Live Computer Use
+    liveAgentComputerUse: 'LIVE AGENT COMPUTER-USE',
+    automatingPortal: 'AUTOMATING PORTAL',
+    headlessBrowser: 'Headless Browser',
+    liveStream: 'Live Stream',
+    playwrightSession: 'Playwright Session',
+    agentThoughtReasoning: 'Agent Thought / Reasoning',
+    runBrowserTask: 'Run Browser Task',
+    simulatePortalCrash: 'Simulate Portal Crash',
+    executeGstChallanFiling: 'Submit Filing',
+    formDetails: 'Form UI',
+    liveCapture: 'Live Capture',
+    openPortal: 'Open Portal',
+
+    // Ledger Table & Receivables
+    ledgerOutgoingComm: 'LEDGER & OUTGOING COMM',
+    recentInvoicesReceivables: 'Recent Invoices & Receivables',
+    all: 'ALL',
+    overdue: 'OVERDUE',
+    promised: 'PROMISED',
+    paid: 'PAID',
+    pending: 'PENDING',
+    invoice: 'Invoice',
+    partyCustomer: 'Party / Customer',
+    dueDate: 'Due Date',
+    amountDue: 'Amount Due',
+    actions: 'Actions',
+    callDebtor: 'Call',
+    automate: 'Run Agent',
+    filed: 'Filed',
+
+    // Agent Audit Trails
+    autonomousAgentAuditTrails: 'AGENT AUDIT TRAILS (LIVE)',
+    agentAuditTrails: 'Agent Audit Trails',
+    realTimeTelemetry: 'Real-Time Telemetry',
+    liveTelemetry: 'LIVE TELEMETRY',
+    ingest: 'INGEST',
+    call: 'CALL',
+    circuitBreaker: 'CIRCUIT BREAKER',
+    approval: 'APPROVAL',
+    browser: 'BROWSER',
+    actionInterruptResolved: 'ACTION INTERRUPT - RESOLVED',
+
+    // Circuit Breaker Approval Modal
+    whatsappCircuitBreakerTriggered: 'WhatsApp Circuit Breaker Triggered',
+    langGraphInterrupt: 'LangGraph Human-In-The-Loop Interrupt',
+    gstSubmissionPaused: 'Statutory GST portal submission paused pending business owner authorization.',
+    actionType: 'Action Type:',
+    targetMsme: 'Target MSME:',
+    taxLiabilityAmount: 'Tax Liability Amount:',
+    twilioGate: 'Twilio WhatsApp Sandbox Gate',
+    rejectAbort: 'Reject & Abort',
+    authorizeWhatsappGate: 'Authorize via WhatsApp Gate',
+    approveExecute: 'Approve & Execute',
+    cancel: 'Cancel',
+
+    // Ledger & Invoices page
+    uploadInvoice: 'Upload Invoice',
+    batchVoiceDispatch: 'Batch Voice Dispatch',
+    filterByStatus: 'Filter by Status',
+    searchInvoicePlaceholder: 'Search invoice number, party name, or GSTIN...',
+    reconcileSelected: 'Reconcile Selected',
+    downloadGstrReport: 'Download GSTR Report',
+    invoiceDetails: 'Invoice Details',
+    triggerVoiceCall: 'Trigger Voice Call',
+    rerunOcr: 'Re-run Gemini OCR',
+
+    // Vernacular Calls page
+    vernacularVoiceCommunications: 'Vernacular AI Voice Communications',
+    dispatchAiCall: 'Dispatch AI Call',
+    selectPartyDebtor: 'Select Party / Debtor',
+    dialectLanguage: 'Dialect / Language',
+    callNow: 'Call Now',
+    callHistory: 'Call History',
+    promisedDate: 'Promised Date',
+    transcript: 'Transcript',
+    recording: 'Recording',
+
+    // Approval Queue page
+    circuitBreakerApprovalQueue: 'Circuit Breaker Approval Queue',
+    pendingActionsTitle: 'Pending Actions',
+    actionDetails: 'Action Details',
+    approvedHistory: 'Approved History',
+    approve: 'Approve',
+    reject: 'Reject',
+
+    // Party Directory page
+    partyDirectoryCreditLedger: 'Party Directory & Credit Ledger',
+    addNewParty: 'Add New Party',
+    totalEntities: 'Total Entities',
+    verifiedGstins: 'Verified GSTINs',
+    avgPaymentDelay: 'Avg Payment Delay',
+    activeDialects: 'Active Dialects',
+    creditScore: 'Credit Score',
+    paymentRisk: 'Payment Risk',
+    preferredDialect: 'Preferred Dialect',
+    totalOutstanding: 'Total Outstanding',
+    lowRisk: 'Low Risk',
+    moderateRisk: 'Moderate Risk',
+    highRisk: 'High Risk',
+
+    // Configuration page
+    systemConfigSafetyGuardrails: 'System Configuration & Safety Guardrails',
+    overview: 'Overview',
+    safetyGuardrails: 'Safety Guardrails',
+    voiceDialects: 'Voice & Dialects',
+    systemPrompts: 'System Prompts',
+    financialPayoutLimit: 'Financial Payout Limit (₹)',
+    requireGstPortalApproval: 'Require GST Portal Approval',
+    emergencyKillSwitch: 'Emergency Kill Switch',
+    saveConfiguration: 'Save Configuration',
+    savedSuccessfully: 'Saved successfully',
+
+    // Audit Logs page
+    systemAuditLogs: 'System Audit Logs',
+    filterBySeverity: 'Filter by Severity',
+    exportLogs: 'Export Logs',
+    eventType: 'Event Type',
+    timestamp: 'Timestamp',
+    severity: 'Severity',
+    info: 'INFO',
+    warning: 'WARNING',
+    critical: 'CRITICAL',
 
     // E-Commerce Module
     ecommerceTitle: 'E-Commerce Operations & MSME Storefront',
@@ -121,11 +269,157 @@ export const translations = {
     // Hub Metrics & Stepper
     runningWebAutomation: 'वेब ऑटोमेशन प्रगति पर है',
     awaitingApproval: 'स्वीकृति की प्रतीक्षा है',
+    standbyReady: 'तैयार / स्टैंडबाय',
+    monthEndCloseComplete: 'माह-अंत प्रक्रिया पूर्ण',
+    idlePaused: 'रुका हुआ / निष्क्रिय',
     totalInvoiced: 'कुल बिल राशि',
     unresolvedOverdue: 'बकाया वसूली',
     completedCalls: 'सम्पन्न वॉयस कॉल्स',
     pendingApprovals: 'लंबित स्वीकृतियां',
+    pendingActions: 'अनुरोध',
     liveBrowserAction: 'प्लेराइट विजुअल ऑटोमेशन चालू है...',
+    receivablesThisCycle: 'इस चक्र की वसूली',
+    actionableDebtors: 'कार्रवाई योग्य देनदार',
+    vernacularOutreach: 'प्रांतीय संपर्क',
+    circuitBreakerActive: 'सुरक्षा प्रणाली सक्रिय',
+    viewQueue: 'कतार देखें',
+    records: 'रिकॉर्ड',
+    today: 'आज',
+
+    // Stepper Steps
+    invoiceIngest: 'बिल अपलोड',
+    reconcile: 'खाता मिलान',
+    voiceFollowUp: 'वॉयस कॉल फॉलो-अप',
+    gstPortalFiling: 'जीएसटी पोर्टल फाइलिंग',
+    verify: 'सत्यापन',
+    liveWorkflowMonthEnd: 'लाइव वर्कफ़्लो: माह-अंत समापन',
+    runAutonomousCycle: 'ऑटोनॉमस चक्र चलाएं',
+    pauseExecution: 'कार्य रोकें',
+    status: 'स्थिति',
+
+    // Live Computer Use
+    liveAgentComputerUse: 'लाइव एआई एजेंट कंप्यूटर संचालन',
+    automatingPortal: 'पोर्टल पर कार्य प्रगति पर',
+    headlessBrowser: 'हेडलेस ब्राउज़र',
+    liveStream: 'लाइव स्ट्रीम',
+    playwrightSession: 'प्लेराइट सत्र',
+    agentThoughtReasoning: 'एआई एजेंट विचार / तर्क',
+    runBrowserTask: 'ब्राउज़र कार्य चलाएं',
+    simulatePortalCrash: 'पोर्टल क्रैश सिम्युलेट करें',
+    executeGstChallanFiling: 'फॉर्म जमा करें',
+    formDetails: 'फॉर्म विवरण',
+    liveCapture: 'लाइव कैप्चर',
+    openPortal: 'पोर्टल खोलें',
+
+    // Ledger Table & Receivables
+    ledgerOutgoingComm: 'खाता बही एवं वॉयस संचार',
+    recentInvoicesReceivables: 'हाल के बिल एवं प्राप्य राशि',
+    all: 'सभी',
+    overdue: 'बकाया',
+    promised: 'वचनबद्ध',
+    paid: 'भुगतान पूर्ण',
+    pending: 'लंबित',
+    invoice: 'बिल संख्या',
+    partyCustomer: 'पार्टी / ग्राहक',
+    dueDate: 'देय तिथि',
+    amountDue: 'देय राशि',
+    actions: 'कार्रवाई',
+    callDebtor: 'कॉल करें',
+    automate: 'ऑटोमेट करें',
+    filed: 'फाइल हो गया',
+
+    // Agent Audit Trails
+    autonomousAgentAuditTrails: 'ऑटोनॉमस एजेंट ऑडिट ट्रेल',
+    agentAuditTrails: 'एजेंट ऑडिट ट्रेल्स',
+    realTimeTelemetry: 'लाइव टेलीमेट्री',
+    liveTelemetry: 'लाइव टेलीमेट्री',
+    ingest: 'डाटा इनपुट',
+    call: 'वॉयस कॉल',
+    circuitBreaker: 'सर्किट ब्रेकर',
+    approval: 'स्वीकृति',
+    browser: 'ब्राउज़र',
+    actionInterruptResolved: 'कार्रवाई अवरोध - समाधान हुआ',
+
+    // Circuit Breaker Approval Modal
+    whatsappCircuitBreakerTriggered: 'व्हाट्सएप सर्किट ब्रेकर सक्रिय हुआ',
+    langGraphInterrupt: 'मानवीय स्वीकृति सुरक्षा पड़ाव',
+    gstSubmissionPaused: 'जीएसटी पोर्टल पर फाइलिंग व्यापार मालिक की अनुमति हेतु रोकी गई है।',
+    actionType: 'कार्रवाई प्रकार:',
+    targetMsme: 'लक्षित एमएसएमई:',
+    taxLiabilityAmount: 'कर देयता राशि:',
+    twilioGate: 'ट्विलियो व्हाट्सएप सैंडबॉक्स गेटवे',
+    rejectAbort: 'अस्वीकार एवं रद्द करें',
+    authorizeWhatsappGate: 'व्हाट्सएप से स्वीकृति दें',
+    approveExecute: 'स्वीकृत एवं निष्पादित करें',
+    cancel: 'रद्द करें',
+
+    // Ledger & Invoices page
+    uploadInvoice: 'बिल अपलोड करें',
+    batchVoiceDispatch: 'एकसाथ वॉयस कॉल्स भेजें',
+    filterByStatus: 'स्थिति अनुसार फ़िल्टर',
+    searchInvoicePlaceholder: 'बिल नंबर, पार्टी का नाम या जीएसटी नंबर खोजें...',
+    reconcileSelected: 'चयनित का मिलान करें',
+    downloadGstrReport: 'जीएसटीआर रिपोर्ट डाउनलोड करें',
+    invoiceDetails: 'बिल विवरण',
+    triggerVoiceCall: 'वॉयस कॉल करें',
+    rerunOcr: 'जेमिनी ओसीआर पुनः चलाएं',
+
+    // Vernacular Calls page
+    vernacularVoiceCommunications: 'प्रांतीय वॉयस संचार केंद्र',
+    dispatchAiCall: 'एआई वॉयस कॉल भेजें',
+    selectPartyDebtor: 'पार्टी / देनदार चुनें',
+    dialectLanguage: 'बोली / भाषा',
+    callNow: 'अभी कॉल करें',
+    callHistory: 'कॉल इतिहास',
+    promisedDate: 'वचनबद्ध तिथि',
+    transcript: 'वार्तालाप प्रतिलिपि',
+    recording: 'रिकॉर्डिंग',
+
+    // Approval Queue page
+    circuitBreakerApprovalQueue: 'सर्किट ब्रेकर कतार',
+    pendingActionsTitle: 'लंबित कार्रवाइयां',
+    actionDetails: 'कार्रवाई विवरण',
+    approvedHistory: 'स्वीकृत इतिहास',
+    approve: 'स्वीकृत करें',
+    reject: 'अस्वीकार करें',
+
+    // Party Directory page
+    partyDirectoryCreditLedger: 'पार्टी डायरेक्टरी एवं क्रेडिट लेजर',
+    addNewParty: 'नई पार्टी जोड़ें',
+    totalEntities: 'कुल पार्टियां',
+    verifiedGstins: 'सत्यापित जीएसटी',
+    avgPaymentDelay: 'औसत भुगतान विलंब',
+    activeDialects: 'सक्रिय बोलियां',
+    creditScore: 'क्रेडिट स्कोर',
+    paymentRisk: 'भुगतान जोखिम',
+    preferredDialect: 'पसंदीदा बोली',
+    totalOutstanding: 'कुल बकाया',
+    lowRisk: 'कम जोखिम',
+    moderateRisk: 'मध्यम जोखिम',
+    highRisk: 'उच्च जोखिम',
+
+    // Configuration page
+    systemConfigSafetyGuardrails: 'सिस्टम सेटिंग्स एवं सुरक्षा गार्डरेल्स',
+    overview: 'सिंहावलोकन',
+    safetyGuardrails: 'सुरक्षा नियम',
+    voiceDialects: 'वॉयस एवं भाषाएं',
+    systemPrompts: 'सिस्टम प्रॉमप्ट्स',
+    financialPayoutLimit: 'वित्तीय भुगतान सीमा (₹)',
+    requireGstPortalApproval: 'जीएसटी पोर्टल फाइलिंग पूर्व स्वीकृति आवश्यक',
+    emergencyKillSwitch: 'आपातकालीन किल स्विच',
+    saveConfiguration: 'सेटिंग्स सुरक्षित करें',
+    savedSuccessfully: 'सफलतापूर्वक सुरक्षित किया गया',
+
+    // Audit Logs page
+    systemAuditLogs: 'सिस्टम ऑडिट लॉग्स',
+    filterBySeverity: 'गंभीरता अनुसार फ़िल्टर',
+    exportLogs: 'लॉग्स डाउनलोड करें',
+    eventType: 'इवेंट प्रकार',
+    timestamp: 'समय',
+    severity: 'गंभीरता',
+    info: 'सूचना',
+    warning: 'चेतावनी',
+    critical: 'अति गंभीर',
 
     // E-Commerce Module
     ecommerceTitle: 'ई-कॉमर्स संचालन एवं एमएसएमई स्टोर',
@@ -209,11 +503,157 @@ export const translations = {
     // Hub Metrics & Stepper
     runningWebAutomation: 'वेब ऑटोमेशन सुरू आहे',
     awaitingApproval: 'मंजुरीची प्रतीक्षा आहे',
+    standbyReady: 'सज्ज / स्टँडबाय',
+    monthEndCloseComplete: 'महिना-अखेर प्रक्रिया पूर्ण',
+    idlePaused: 'थांबलेले / निष्क्रिय',
     totalInvoiced: 'एकूण पावत्या रक्कम',
     unresolvedOverdue: 'थकबाकी वसुली',
     completedCalls: 'पूर्ण झालेले व्हॉइस कॉल्स',
     pendingApprovals: 'प्रलंबित मंजुऱ्या',
+    pendingActions: 'विनंत्या',
     liveBrowserAction: 'प्लेराइट व्हिज्युअल ऑटोमेशन कार्यरत...',
+    receivablesThisCycle: 'या चक्रातील येणे बाकी',
+    actionableDebtors: 'कारवाईयोग्य थकबाकीदार',
+    vernacularOutreach: 'स्थानिक भाषा संवाद',
+    circuitBreakerActive: 'सुरक्षा प्रणाली सक्रिय',
+    viewQueue: 'रांग पाहा',
+    records: 'नोंदी',
+    today: 'आज',
+
+    // Stepper Steps
+    invoiceIngest: 'पावती नोंदणी',
+    reconcile: 'खाते जुळणी',
+    voiceFollowUp: 'व्हॉइस कॉल पाठपुरावा',
+    gstPortalFiling: 'जीएसटी पोर्टल भरणे',
+    verify: 'पडताळणी',
+    liveWorkflowMonthEnd: 'थेट वर्कफ्लो: महिना-अखेर पूर्णता',
+    runAutonomousCycle: 'स्वयंचलित चक्र चालवा',
+    pauseExecution: 'कार्य थांबवा',
+    status: 'स्थिती',
+
+    // Live Computer Use
+    liveAgentComputerUse: 'थेट एआय एजंट संगणक वापर',
+    automatingPortal: 'पोर्टलवर काम सुरू आहे',
+    headlessBrowser: 'हेडलेस ब्राउझर',
+    liveStream: 'थेट प्रवाह',
+    playwrightSession: 'प्लेराइट सत्र',
+    agentThoughtReasoning: 'एआय एजंट विचार / तर्क',
+    runBrowserTask: 'ब्राउझर कार्य चालवा',
+    simulatePortalCrash: 'पोर्टल क्रॅश सिम्युलेट करा',
+    executeGstChallanFiling: 'फॉर्म दाखल करा',
+    formDetails: 'फॉर्म तपशील',
+    liveCapture: 'थेट कॅप्चर',
+    openPortal: 'पोर्टल उघडा',
+
+    // Ledger Table & Receivables
+    ledgerOutgoingComm: 'खातेवही आणि व्हॉइस संवाद',
+    recentInvoicesReceivables: 'नुकतीच झालेली बिले आणि येणे बाकी',
+    all: 'सर्व',
+    overdue: 'थकबाकी',
+    promised: 'वचनबद्ध',
+    paid: 'पैसे भरले',
+    pending: 'प्रलंबित',
+    invoice: 'पावती क्रमांक',
+    partyCustomer: 'ग्राहक / व्यापारी',
+    dueDate: 'देय तारीख',
+    amountDue: 'देय रक्कम',
+    actions: 'कृती',
+    callDebtor: 'कॉल करा',
+    automate: 'स्वयंचलित करा',
+    filed: 'दाखल झाले',
+
+    // Agent Audit Trails
+    autonomousAgentAuditTrails: 'स्वयंचलित एजंट ऑडिट नोंदी',
+    agentAuditTrails: 'एजंट ऑडिट नोंदी',
+    realTimeTelemetry: 'थेट टेलीमेट्री',
+    liveTelemetry: 'थेट टेलीमेट्री',
+    ingest: 'माहिती नोंद',
+    call: 'व्हॉइस कॉल',
+    circuitBreaker: 'सर्किट ब्रेकर',
+    approval: 'मंजुरी',
+    browser: 'ब्राउझर',
+    actionInterruptResolved: 'कार्रवाई व्यत्यय - निवारण झाले',
+
+    // Circuit Breaker Approval Modal
+    whatsappCircuitBreakerTriggered: 'व्हॉट्सअ‍ॅप सर्किट ब्रेकर सक्रिय झाला',
+    langGraphInterrupt: 'मानवी मंजुरी सुरक्षा टप्पा',
+    gstSubmissionPaused: 'जीएसटी पोर्टलवरील फाइलिंग व्यवसाय मालकाच्या परवानगीसाठी थांबवली आहे.',
+    actionType: 'कृती प्रकार:',
+    targetMsme: 'लक्षित एमएसएमई:',
+    taxLiabilityAmount: 'कर देयता रक्कम:',
+    twilioGate: 'ट्विलिओ व्हॉट्सअ‍ॅप सँडबॉक्स गेटवे',
+    rejectAbort: 'नाकारा आणि रद्द करा',
+    authorizeWhatsappGate: 'व्हॉट्सअ‍ॅपद्वारे मंजुरी द्या',
+    approveExecute: 'मंजूर आणि अमलात आणा',
+    cancel: 'रद्द करा',
+
+    // Ledger & Invoices page
+    uploadInvoice: 'पावती अपलोड करा',
+    batchVoiceDispatch: 'एकत्रित व्हॉइस कॉल्स पाठवा',
+    filterByStatus: 'स्थितीनुसार फिल्टर',
+    searchInvoicePlaceholder: 'पावती क्रमांक, ग्राहकाचे नाव किंवा जीएसटी क्रमांक शोधा...',
+    reconcileSelected: 'निवडलेली बिले जुळवा',
+    downloadGstrReport: 'जीएसटीआर अहवाल डाऊनलोड करा',
+    invoiceDetails: 'पावती तपशील',
+    triggerVoiceCall: 'व्हॉइस कॉल करा',
+    rerunOcr: 'जेमिनी ओसीआर पुन्हा चालवा',
+
+    // Vernacular Calls page
+    vernacularVoiceCommunications: 'स्थानिक व्हॉइस संवाद केंद्र',
+    dispatchAiCall: 'एआय व्हॉइस कॉल पाठवा',
+    selectPartyDebtor: 'ग्राहक / थकबाकीदार निवडा',
+    dialectLanguage: 'स्थानिक भाषा',
+    callNow: 'आता कॉल करा',
+    callHistory: 'कॉल इतिहास',
+    promisedDate: 'वचनबद्ध तारीख',
+    transcript: 'संभाषण उतारा',
+    recording: 'रेकॉर्डिंग',
+
+    // Approval Queue page
+    circuitBreakerApprovalQueue: 'सर्किट ब्रेकर रांग',
+    pendingActionsTitle: 'प्रलंबित कृती',
+    actionDetails: 'कृती तपशील',
+    approvedHistory: 'मंजूर इतिहास',
+    approve: 'मंजूर करा',
+    reject: 'नाकारा',
+
+    // Party Directory page
+    partyDirectoryCreditLedger: 'ग्राहक डायरेक्टरी आणि क्रेडिट खातेवही',
+    addNewParty: 'नवीन ग्राहक जोडा',
+    totalEntities: 'एकूण ग्राहक',
+    verifiedGstins: 'पडताळलेले जीएसटी',
+    avgPaymentDelay: 'सरासरी पेमेंट उशीर',
+    activeDialects: 'सक्रिय भाषा',
+    creditScore: 'क्रेडिट स्कोअर',
+    paymentRisk: 'पैसे भरण्याचा धोका',
+    preferredDialect: 'पसंतीची भाषा',
+    totalOutstanding: 'एकूण थकबाकी',
+    lowRisk: 'कमी धोका',
+    moderateRisk: 'मध्यम धोका',
+    highRisk: 'जास्त धोका',
+
+    // Configuration page
+    systemConfigSafetyGuardrails: 'प्रणाली संरचना आणि सुरक्षा नियम',
+    overview: 'आढावा',
+    safetyGuardrails: 'सुरक्षा नियम',
+    voiceDialects: 'व्हॉइस आणि भाषा',
+    systemPrompts: 'सिस्टम सूचना',
+    financialPayoutLimit: 'वित्तीय पेमेंट मर्यादा (₹)',
+    requireGstPortalApproval: 'जीएसटी पोर्टल फाइलिंगसाठी पूर्व मंजुरी आवश्यक',
+    emergencyKillSwitch: 'तातडीचे किल स्विच',
+    saveConfiguration: 'सेटिंग्ज जतन करा',
+    savedSuccessfully: 'यशस्वीरित्या जतन केले',
+
+    // Audit Logs page
+    systemAuditLogs: 'प्रणाली ऑडिट नोंदी',
+    filterBySeverity: 'तीव्रतेनुसार फिल्टर',
+    exportLogs: 'नोंदी डाऊनलोड करा',
+    eventType: 'घटना प्रकार',
+    timestamp: 'वेळ',
+    severity: 'तीव्रता',
+    info: 'माहिती',
+    warning: 'इशारा',
+    critical: 'अति गंभीर',
 
     // E-Commerce Module
     ecommerceTitle: 'ई-कॉमर्स ऑपरेशन्स आणि एमएसएमई स्टोअर',
@@ -267,6 +707,27 @@ export const translations = {
   }
 };
 
+// Build sorted phrase list for high-performance sub-string replacement
+const sortedPhrasePairs = {
+  hi: [],
+  mr: []
+};
+
+['hi', 'mr'].forEach((lang) => {
+  const pairs = [];
+  Object.keys(translations.en).forEach((key) => {
+    const enVal = translations.en[key];
+    const targetVal = translations[lang][key];
+    if (enVal && targetVal && enVal !== targetVal) {
+      pairs.push([enVal, targetVal]);
+    }
+  });
+
+  // Sort by longest English phrase first so compound phrases replace before single words
+  pairs.sort((a, b) => b[0].length - a[0].length);
+  sortedPhrasePairs[lang] = pairs;
+});
+
 const ThemeLanguageContext = createContext(null);
 
 export function ThemeLanguageProvider({ children }) {
@@ -306,13 +767,113 @@ export function ThemeLanguageProvider({ children }) {
     }
   }, [theme]);
 
-  // Synchronize language to localStorage
+  // Synchronize language to localStorage and trigger DOM-level auto translation
   useEffect(() => {
     try {
       localStorage.setItem('ai01_lang', language);
     } catch (e) {
       console.warn('Failed to save language', e);
     }
+
+    // Auto-translate rendered DOM text nodes for 100% comprehensive language coverage
+    const handleDomTranslation = () => {
+      if (typeof document === 'undefined') return;
+
+      const pairs = sortedPhrasePairs[language];
+
+      const walkTextNodes = (node) => {
+        if (!node) return;
+        
+        // Skip code, script, style
+        if (['SCRIPT', 'STYLE', 'CODE', 'PRE'].includes(node.nodeName)) return;
+
+        if (node.nodeType === Node.TEXT_NODE) {
+          const raw = node.nodeValue;
+          if (!raw) return;
+          const trimmed = raw.trim();
+          if (!trimmed || trimmed.length < 2) return;
+
+          // Store original English text if not already stored
+          if (node.__originalText === undefined) {
+            node.__originalText = raw;
+          }
+
+          if (language === 'en') {
+            if (node.__originalText !== undefined && node.nodeValue !== node.__originalText) {
+              node.nodeValue = node.__originalText;
+            }
+            return;
+          }
+
+          if (pairs && pairs.length > 0) {
+            let replaced = node.__originalText;
+            let matched = false;
+            for (let i = 0; i < pairs.length; i++) {
+              const [enPhrase, targetPhrase] = pairs[i];
+              if (replaced.includes(enPhrase)) {
+                replaced = replaced.replaceAll(enPhrase, targetPhrase);
+                matched = true;
+              }
+            }
+            if (matched && node.nodeValue !== replaced) {
+              node.nodeValue = replaced;
+            }
+          }
+        } else {
+          // Check placeholder on inputs and textareas
+          if (node.nodeName === 'INPUT' || node.nodeName === 'TEXTAREA') {
+            if (node.placeholder) {
+              if (node.__originalPlaceholder === undefined) {
+                node.__originalPlaceholder = node.placeholder;
+              }
+              if (language === 'en') {
+                if (node.__originalPlaceholder) node.placeholder = node.__originalPlaceholder;
+              } else if (pairs && pairs.length > 0) {
+                let replaced = node.__originalPlaceholder || node.placeholder;
+                for (let i = 0; i < pairs.length; i++) {
+                  const [enPhrase, targetPhrase] = pairs[i];
+                  if (replaced.includes(enPhrase)) {
+                    replaced = replaced.replaceAll(enPhrase, targetPhrase);
+                  }
+                }
+                if (node.placeholder !== replaced) {
+                  node.placeholder = replaced;
+                }
+              }
+            }
+          }
+
+          // Traverse children
+          for (let child = node.firstChild; child; child = child.nextSibling) {
+            walkTextNodes(child);
+          }
+        }
+      };
+
+      walkTextNodes(document.body);
+    };
+
+    // Run immediately and after small render ticks
+    handleDomTranslation();
+    const tId1 = setTimeout(handleDomTranslation, 50);
+    const tId2 = setTimeout(handleDomTranslation, 300);
+
+    // Observe DOM mutations to translate dynamically loaded records and elements
+    const observer = new MutationObserver(() => {
+      handleDomTranslation();
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: false
+    });
+
+    return () => {
+      clearTimeout(tId1);
+      clearTimeout(tId2);
+      observer.disconnect();
+    };
   }, [language]);
 
   const toggleTheme = () => {
@@ -320,16 +881,33 @@ export function ThemeLanguageProvider({ children }) {
   };
 
   // Translation helper function
-  const t = (key, fallback = '') => {
+  const t = (keyOrPhrase, fallback = '') => {
+    if (!keyOrPhrase) return fallback;
+
     const langDict = translations[language] || translations.en;
-    if (langDict && langDict[key] !== undefined) {
-      return langDict[key];
+    // 1. Direct key match (e.g. t('operationalHub'))
+    if (langDict && langDict[keyOrPhrase] !== undefined) {
+      return langDict[keyOrPhrase];
     }
+    
+    // 2. Phrase lookup in dictionary values
+    const pairs = sortedPhrasePairs[language];
+    if (pairs) {
+      const trimmed = String(keyOrPhrase).trim();
+      for (let i = 0; i < pairs.length; i++) {
+        if (pairs[i][0] === trimmed) {
+          return pairs[i][1];
+        }
+      }
+    }
+
+    // 3. English default key match
     const defaultDict = translations.en;
-    if (defaultDict && defaultDict[key] !== undefined) {
-      return defaultDict[key];
+    if (defaultDict && defaultDict[keyOrPhrase] !== undefined) {
+      return defaultDict[keyOrPhrase];
     }
-    return fallback || key;
+
+    return fallback || keyOrPhrase;
   };
 
   return (

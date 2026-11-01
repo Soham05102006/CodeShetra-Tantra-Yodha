@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MoreHorizontal, PhoneCall, Play, Calendar, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { useAppLanguage } from '../context/ThemeLanguageContext';
 
 export default function LedgerTableCard({ 
   transactions = [], 
@@ -7,6 +8,7 @@ export default function LedgerTableCard({
   onRunAgent,
   onActionMenu 
 }) {
+  const { t } = useAppLanguage();
   const [filter, setFilter] = useState('ALL');
 
   // Filter transactions
@@ -50,10 +52,10 @@ export default function LedgerTableCard({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <h3 className="text-xs font-bold tracking-wider text-slate-200 uppercase">
-            LEDGER & OUTGOING COMM
+            {t('ledgerOutgoingComm', 'LEDGER & OUTGOING COMM')}
           </h3>
           <span className="text-[11px] font-mono text-slate-500 bg-[#0c1017] px-2 py-0.5 rounded border border-[#1e273a]">
-            {displayRows.length} Records
+            {displayRows.length} {t('records', 'Records')}
           </span>
         </div>
 
@@ -70,7 +72,7 @@ export default function LedgerTableCard({
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                {tab}
+                {t(tab, tab)}
               </button>
             ))}
           </div>
@@ -89,11 +91,11 @@ export default function LedgerTableCard({
         <table className="w-full text-left text-xs">
           <thead>
             <tr className="border-b border-[#1c2436] text-[11px] text-slate-400 font-medium">
-              <th className="py-2.5 font-normal">Entity Name</th>
-              <th className="py-2.5 font-normal">Amount Due</th>
-              <th className="py-2.5 font-normal">Dialect / Language</th>
-              <th className="py-2.5 font-normal">Dynamic Note / Promise</th>
-              <th className="py-2.5 font-normal text-right">Actions</th>
+              <th className="py-2.5 font-normal">{t('partyCustomer', 'Party / Customer')}</th>
+              <th className="py-2.5 font-normal">{t('amountDue', 'Amount Due')}</th>
+              <th className="py-2.5 font-normal">{t('dialectLanguage', 'Dialect / Language')}</th>
+              <th className="py-2.5 font-normal">{t('promisedDate', 'Dynamic Note / Promise')}</th>
+              <th className="py-2.5 font-normal text-right">{t('actions', 'Actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#182030]">
@@ -122,7 +124,7 @@ export default function LedgerTableCard({
 
                   <td className="py-3 text-slate-400">
                     <span className="bg-[#141b29] px-2 py-0.5 rounded text-[10px] text-slate-300 border border-[#202b40]">
-                      {row.dialect || 'Hindi'}
+                      {t(row.dialect || 'Hindi', row.dialect || 'Hindi')}
                     </span>
                   </td>
 
@@ -130,11 +132,11 @@ export default function LedgerTableCard({
                     {row.promised_payment_date ? (
                       <span className="text-emerald-400 font-medium flex items-center gap-1 text-[11px]">
                         <Calendar className="w-3 h-3 text-emerald-400 shrink-0" />
-                        <span>Promised: {row.promised_payment_date}</span>
+                        <span>{t('promised', 'Promised')}: {row.promised_payment_date}</span>
                       </span>
                     ) : (
                       <span className="text-[11px] text-slate-400 truncate block">
-                        {row.note || row.notes || 'Call complete (promised tomorrow via UPI)'}
+                        {t(row.note || row.notes || 'Call complete (promised tomorrow via UPI)', row.note || row.notes || 'Call complete (promised tomorrow via UPI)')}
                       </span>
                     )}
                   </td>
@@ -149,7 +151,7 @@ export default function LedgerTableCard({
                           title="Trigger Outbound Hindi/Hinglish Recovery Call"
                         >
                           <PhoneCall className="w-2.5 h-2.5" />
-                          <span>Call</span>
+                          <span>{t('callDebtor', 'Call')}</span>
                         </button>
                       )}
 
@@ -163,7 +165,7 @@ export default function LedgerTableCard({
                         title="Run Autonomous MSME Agent Workflow"
                       >
                         <Play className="w-2.5 h-2.5 fill-current" />
-                        <span>{isPaid ? 'Filed' : 'Run Agent'}</span>
+                        <span>{isPaid ? t('paid', 'Filed') : t('automate', 'Run Agent')}</span>
                       </button>
                     </div>
                   </td>

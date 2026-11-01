@@ -10,6 +10,7 @@ import {
   Maximize2 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAppLanguage } from '../context/ThemeLanguageContext';
 
 export default function LiveComputerUseCard({ 
   screenshotUrl,
@@ -21,6 +22,7 @@ export default function LiveComputerUseCard({
   onSubmitFiling,
   onActionMenu
 }) {
+  const { t } = useAppLanguage();
   const [selectedStepIndex, setSelectedStepIndex] = useState(null);
   const [activeTab, setActiveTab] = useState(screenshotUrl || browserSteps.length > 0 ? 'capture' : 'form');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,12 +62,12 @@ export default function LiveComputerUseCard({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <h3 className="text-xs font-bold tracking-wider text-slate-200 uppercase">
-            LIVE AGENT COMPUTER-USE
+            {t('liveAgentComputerUse', 'LIVE AGENT COMPUTER-USE')}
           </h3>
           {isRunning && (
             <span className="flex items-center gap-1 text-[10px] font-semibold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
-              AUTOMATING PORTAL
+              {t('automatingPortal', 'AUTOMATING PORTAL')}
             </span>
           )}
         </div>
@@ -81,7 +83,7 @@ export default function LiveComputerUseCard({
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              Live Capture
+              {t('liveCapture', 'Live Capture')}
             </button>
             <button
               onClick={() => setActiveTab('form')}
@@ -91,7 +93,7 @@ export default function LiveComputerUseCard({
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              Form UI
+              {t('formDetails', 'Form UI')}
             </button>
           </div>
 
@@ -102,7 +104,7 @@ export default function LiveComputerUseCard({
             className="text-[11px] text-slate-400 hover:text-white flex items-center gap-1 bg-[#161d2b] px-2 py-1 rounded border border-[#232e44] transition-all"
             title="Open Live Mock GST Portal in New Tab"
           >
-            <span>Open Portal</span>
+            <span>{t('portalAutomation', 'Open Portal')}</span>
             <ExternalLink className="w-3 h-3" />
           </a>
 
@@ -227,7 +229,7 @@ export default function LiveComputerUseCard({
                     onClick={handleClickSubmit}
                     className="bg-[#1d4ed8] hover:bg-blue-700 text-white font-semibold text-xs px-5 py-2 rounded shadow-md transition-all active:scale-95 cursor-pointer relative"
                   >
-                    {isSubmitting ? 'Filing GSTR-3B...' : 'Submit Filing'}
+                    {isSubmitting ? 'Filing GSTR-3B...' : t('executeGstChallanFiling', 'Submit Filing')}
                   </button>
                 </div>
               </div>
@@ -237,10 +239,10 @@ export default function LiveComputerUseCard({
           {/* Floating Action Log Bubble */}
           <div className="absolute top-4 right-4 bg-[#111724]/95 border border-slate-700/80 rounded-xl p-3 shadow-2xl backdrop-blur-md text-xs max-w-xs pointer-events-none z-10">
             <div className="font-semibold text-slate-200">
-              {displayedStep?.reasoning || currentReasoning || currentAction}
+              {t(displayedStep?.reasoning || currentReasoning || currentAction, displayedStep?.reasoning || currentReasoning || currentAction)}
             </div>
             <div className="text-[11px] text-slate-400 mt-0.5">
-              {subAction}
+              {t(subAction, subAction)}
             </div>
           </div>
 
